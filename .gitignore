@@ -1,0 +1,10 @@
+local/
+build/
+.venv*/
+__pycache__/
+*.pyc
+.env*
+secrets.yaml
+settings.json
+helper-settings.json
+.DS_Store

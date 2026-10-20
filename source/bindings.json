@@ -1,0 +1,614 @@
+{
+  "BIND_001": {
+    "kind": "automation",
+    "entity": "automation.mower_clear_recovered_stuck_warning"
+  },
+  "BIND_002": {
+    "kind": "automation",
+    "entity": "automation.mower_consecutive_dispatch"
+  },
+  "BIND_003": {
+    "kind": "automation",
+    "entity": "automation.mower_departure_safety"
+  },
+  "BIND_004": {
+    "kind": "automation",
+    "entity": "automation.mower_extended_stall_watchdog"
+  },
+  "BIND_005": {
+    "kind": "automation",
+    "entity": "automation.mower_seasonal_interval_schedule"
+  },
+  "BIND_006": {
+    "kind": "automation",
+    "entity": "automation.mower_guarded_progress_checkpoint"
+  },
+  "BIND_007": {
+    "kind": "automation",
+    "entity": "automation.mower_idle_but_not_charging"
+  },
+  "BIND_008": {
+    "kind": "automation",
+    "entity": "automation.mower_light_rain_safety"
+  },
+  "BIND_009": {
+    "kind": "automation",
+    "entity": "automation.mower_obstruction_dock"
+  },
+  "BIND_010": {
+    "kind": "automation",
+    "entity": "automation.mower_orphan_battery_reserve"
+  },
+  "BIND_011": {
+    "kind": "automation",
+    "entity": "automation.mower_owned_pause_alert"
+  },
+  "BIND_012": {
+    "kind": "automation",
+    "entity": "automation.mower_owned_telemetry_refresh"
+  },
+  "BIND_013": {
+    "kind": "automation",
+    "entity": "automation.mower_owner_completion_latch"
+  },
+  "BIND_014": {
+    "kind": "automation",
+    "entity": "automation.mower_owner_reconcile"
+  },
+  "BIND_015": {
+    "kind": "automation",
+    "entity": "automation.mower_prove_dry_launch_before_light_rain_tolerance"
+  },
+  "BIND_016": {
+    "kind": "automation",
+    "entity": "automation.mower_rain_tolerance_cleanup"
+  },
+  "BIND_017": {
+    "kind": "automation",
+    "entity": "automation.mower_release_rain_hold"
+  },
+  "BIND_018": {
+    "kind": "automation",
+    "entity": "automation.mower_roadside_orphan_return"
+  },
+  "BIND_019": {
+    "kind": "automation",
+    "entity": "automation.mower_roadside_silent_stall"
+  },
+  "BIND_020": {
+    "kind": "automation",
+    "entity": "automation.mower_roadside_stationary_tracker"
+  },
+  "BIND_021": {
+    "kind": "automation",
+    "entity": "automation.mower_self_check_intervention"
+  },
+  "BIND_022": {
+    "kind": "automation",
+    "entity": "automation.mower_start_rain_hold"
+  },
+  "BIND_023": {
+    "kind": "automation",
+    "entity": "automation.mower_unmapped_error_journal"
+  },
+  "BIND_024": {
+    "kind": "automation",
+    "entity": "automation.mower_weather_freshness_and_outlook"
+  },
+  "BIND_025": {
+    "kind": "automation",
+    "entity": "automation.mower_working_pause_recovery"
+  },
+  "BIND_026": {
+    "kind": "automation",
+    "entity": "automation.mower_smart_auto_unstick"
+  },
+  "BIND_027": {
+    "kind": "external",
+    "domain": "binary_sensor",
+    "purpose": "binary_sensor.mower_rain_detected"
+  },
+  "BIND_028": {
+    "kind": "external",
+    "domain": "binary_sensor",
+    "purpose": "binary_sensor.local_rain"
+  },
+  "BIND_029": {
+    "kind": "external",
+    "domain": "binary_sensor",
+    "purpose": "binary_sensor.mower_charging"
+  },
+  "BIND_030": {
+    "kind": "external",
+    "domain": "button",
+    "purpose": "button.mower_refresh_status"
+  },
+  "BIND_031": {
+    "kind": "external",
+    "domain": "button",
+    "purpose": "button.mower_cancel_current_task"
+  },
+  "BIND_032": {
+    "kind": "external",
+    "domain": "device_tracker",
+    "purpose": "device_tracker.mower_position"
+  },
+  "BIND_033": {
+    "kind": "helper",
+    "entity": "input_boolean.mower_batch_cut_complete"
+  },
+  "BIND_034": {
+    "kind": "helper",
+    "entity": "input_boolean.mower_carryover_active"
+  },
+  "BIND_035": {
+    "kind": "helper",
+    "entity": "input_boolean.mower_light_rain_tolerance"
+  },
+  "BIND_036": {
+    "kind": "helper",
+    "entity": "input_boolean.mower_manual_hold"
+  },
+  "BIND_037": {
+    "kind": "helper",
+    "entity": "input_boolean.mower_near_term_weather_risk"
+  },
+  "BIND_038": {
+    "kind": "helper",
+    "entity": "input_boolean.mower_owner_cut_proved"
+  },
+  "BIND_039": {
+    "kind": "helper",
+    "entity": "input_boolean.mower_rain_hold_active"
+  },
+  "BIND_040": {
+    "kind": "helper",
+    "entity": "input_boolean.mower_rain_override_legacy_1"
+  },
+  "BIND_041": {
+    "kind": "helper",
+    "entity": "input_boolean.mower_roadside_return_due"
+  },
+  "BIND_042": {
+    "kind": "helper",
+    "entity": "input_boolean.mower_weather_sources_fresh"
+  },
+  "BIND_043": {
+    "kind": "external",
+    "domain": "input_boolean",
+    "purpose": "input_boolean.operator_vacation"
+  },
+  "BIND_044": {
+    "kind": "helper",
+    "entity": "input_datetime.mower_zone_c_not_before"
+  },
+  "BIND_045": {
+    "kind": "helper",
+    "entity": "input_datetime.mower_owner_heartbeat"
+  },
+  "BIND_046": {
+    "kind": "helper",
+    "entity": "input_datetime.mower_zone_e_last_complete"
+  },
+  "BIND_047": {
+    "kind": "helper",
+    "entity": "input_datetime.mower_rain_release_after"
+  },
+  "BIND_048": {
+    "kind": "helper",
+    "entity": "input_datetime.mower_resume_date"
+  },
+  "BIND_049": {
+    "kind": "helper",
+    "entity": "input_datetime.mower_scheduling_not_before"
+  },
+  "BIND_050": {
+    "kind": "external",
+    "domain": "input_number",
+    "purpose": "input_number.outdoor_temperature_ema"
+  },
+  "BIND_051": {
+    "kind": "helper",
+    "entity": "input_number.mower_area_3_next_angle"
+  },
+  "BIND_052": {
+    "kind": "helper",
+    "entity": "input_number.mower_area_6_next_angle"
+  },
+  "BIND_053": {
+    "kind": "helper",
+    "entity": "input_number.mower_high_wind_limit"
+  },
+  "BIND_054": {
+    "kind": "helper",
+    "entity": "input_number.mower_intervention_free_batches"
+  },
+  "BIND_055": {
+    "kind": "helper",
+    "entity": "input_number.mower_owner_checkpoint"
+  },
+  "BIND_056": {
+    "kind": "helper",
+    "entity": "input_number.mower_owner_reconcile_attempts"
+  },
+  "BIND_057": {
+    "kind": "helper",
+    "entity": "input_number.mower_rain_hold_minutes"
+  },
+  "BIND_058": {
+    "kind": "helper",
+    "entity": "input_number.mower_recovery_attempts"
+  },
+  "BIND_059": {
+    "kind": "helper",
+    "entity": "input_number.mower_recovery_target_battery"
+  },
+  "BIND_060": {
+    "kind": "helper",
+    "entity": "input_number.mower_resume_progress"
+  },
+  "BIND_061": {
+    "kind": "helper",
+    "entity": "input_number.mower_roadside_stationary_limit_minutes"
+  },
+  "BIND_062": {
+    "kind": "helper",
+    "entity": "input_number.mower_segment_end_battery"
+  },
+  "BIND_063": {
+    "kind": "helper",
+    "entity": "input_number.mower_segment_end_blade_time"
+  },
+  "BIND_064": {
+    "kind": "helper",
+    "entity": "input_number.mower_segment_start_battery"
+  },
+  "BIND_065": {
+    "kind": "helper",
+    "entity": "input_number.mower_segment_start_blade_time"
+  },
+  "BIND_066": {
+    "kind": "helper",
+    "entity": "input_number.mower_segment_start_progress"
+  },
+  "BIND_067": {
+    "kind": "helper",
+    "entity": "input_number.mower_valid_burn_rate"
+  },
+  "BIND_068": {
+    "kind": "helper",
+    "entity": "input_number.mower_zone_fail_count"
+  },
+  "BIND_069": {
+    "kind": "external",
+    "domain": "input_select",
+    "purpose": "input_select.seasonal_growth_mode"
+  },
+  "BIND_070": {
+    "kind": "external",
+    "domain": "input_select",
+    "purpose": "input_select.seasonal_growth_override"
+  },
+  "BIND_071": {
+    "kind": "helper",
+    "entity": "input_select.mower_active_area"
+  },
+  "BIND_072": {
+    "kind": "helper",
+    "entity": "input_select.mower_active_batch"
+  },
+  "BIND_073": {
+    "kind": "helper",
+    "entity": "input_select.mower_coordinator_state"
+  },
+  "BIND_074": {
+    "kind": "helper",
+    "entity": "input_select.mower_due_plan"
+  },
+  "BIND_075": {
+    "kind": "helper",
+    "entity": "input_select.mower_resume_area"
+  },
+  "BIND_076": {
+    "kind": "helper",
+    "entity": "input_select.mower_resume_batch"
+  },
+  "BIND_077": {
+    "kind": "helper",
+    "entity": "input_text.mower_area_attempt_dates"
+  },
+  "BIND_078": {
+    "kind": "helper",
+    "entity": "input_text.mower_area_map"
+  },
+  "BIND_079": {
+    "kind": "helper",
+    "entity": "input_text.mower_carryover_last_attempt_date"
+  },
+  "BIND_080": {
+    "kind": "helper",
+    "entity": "input_text.mower_checkpoint_map_identity"
+  },
+  "BIND_081": {
+    "kind": "helper",
+    "entity": "input_text.mower_dock_contact_recovery"
+  },
+  "BIND_082": {
+    "kind": "helper",
+    "entity": "input_text.mower_zone_c_last_complete_verified"
+  },
+  "BIND_083": {
+    "kind": "helper",
+    "entity": "input_text.mower_zone_d_last_complete_verified"
+  },
+  "BIND_084": {
+    "kind": "helper",
+    "entity": "input_text.mower_zone_a_last_complete_verified"
+  },
+  "BIND_085": {
+    "kind": "helper",
+    "entity": "input_text.mower_job_token"
+  },
+  "BIND_086": {
+    "kind": "helper",
+    "entity": "input_text.mower_last_pause_alert_key"
+  },
+  "BIND_087": {
+    "kind": "helper",
+    "entity": "input_text.mower_last_plan_date"
+  },
+  "BIND_088": {
+    "kind": "helper",
+    "entity": "input_text.mower_last_status_area"
+  },
+  "BIND_089": {
+    "kind": "helper",
+    "entity": "input_text.mower_last_trapped_recovery_key"
+  },
+  "BIND_090": {
+    "kind": "helper",
+    "entity": "input_text.mower_last_unmapped_error"
+  },
+  "BIND_091": {
+    "kind": "helper",
+    "entity": "input_text.mower_observed_cut_owner"
+  },
+  "BIND_092": {
+    "kind": "helper",
+    "entity": "input_text.mower_orphan_reserve_return_token"
+  },
+  "BIND_093": {
+    "kind": "helper",
+    "entity": "input_text.mower_pending_handoff"
+  },
+  "BIND_094": {
+    "kind": "helper",
+    "entity": "input_text.mower_planned_areas"
+  },
+  "BIND_095": {
+    "kind": "helper",
+    "entity": "input_text.mower_zone_e_last_complete_verified"
+  },
+  "BIND_096": {
+    "kind": "helper",
+    "entity": "input_text.mower_roadside_return_budget"
+  },
+  "BIND_097": {
+    "kind": "helper",
+    "entity": "input_text.mower_roadside_stationary_candidate"
+  },
+  "BIND_098": {
+    "kind": "helper",
+    "entity": "input_text.mower_route_signature"
+  },
+  "BIND_099": {
+    "kind": "helper",
+    "entity": "input_text.mower_schedule_rationale"
+  },
+  "BIND_100": {
+    "kind": "helper",
+    "entity": "input_text.mower_self_check_alert_episode"
+  },
+  "BIND_101": {
+    "kind": "helper",
+    "entity": "input_text.mower_zone_b_last_complete_verified"
+  },
+  "BIND_102": {
+    "kind": "external",
+    "domain": "lawn_mower",
+    "purpose": "lawn_mower.mower"
+  },
+  "BIND_103": {
+    "kind": "external",
+    "domain": "notify",
+    "purpose": "notify.operator_mobile"
+  },
+  "BIND_104": {
+    "kind": "external",
+    "domain": "person",
+    "purpose": "person.operator"
+  },
+  "BIND_105": {
+    "kind": "script",
+    "entity": "script.mower_consecutive_handoff"
+  },
+  "BIND_106": {
+    "kind": "script",
+    "entity": "script.mower_dock_cancel_restart"
+  },
+  "BIND_107": {
+    "kind": "script",
+    "entity": "script.mower_exhausted_recovery_alert"
+  },
+  "BIND_108": {
+    "kind": "script",
+    "entity": "script.mower_finalize_owned_area"
+  },
+  "BIND_109": {
+    "kind": "script",
+    "entity": "script.mower_resume_target_calculator"
+  },
+  "BIND_110": {
+    "kind": "script",
+    "entity": "script.mower_run_due_plan"
+  },
+  "BIND_111": {
+    "kind": "script",
+    "entity": "script.mower_run_owned_area"
+  },
+  "BIND_112": {
+    "kind": "script",
+    "entity": "script.mower_start_fresh_area"
+  },
+  "BIND_113": {
+    "kind": "external",
+    "domain": "select",
+    "purpose": "select.mower_traversal_mode"
+  },
+  "BIND_114": {
+    "kind": "external",
+    "domain": "select",
+    "purpose": "select.mower_turnaround_mode"
+  },
+  "BIND_115": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.mower_self_check"
+  },
+  "BIND_116": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.mower_activity_mode"
+  },
+  "BIND_117": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.mower_battery"
+  },
+  "BIND_118": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.mower_blade_used_time"
+  },
+  "BIND_119": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.mower_connection"
+  },
+  "BIND_120": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.mower_device_position_type"
+  },
+  "BIND_121": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.mower_last_error"
+  },
+  "BIND_122": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.mower_last_error_code"
+  },
+  "BIND_123": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.mower_last_error_time"
+  },
+  "BIND_124": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.mower_progress"
+  },
+  "BIND_125": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.mower_rtk_position"
+  },
+  "BIND_126": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.mower_total_mileage"
+  },
+  "BIND_127": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.mower_work_area"
+  },
+  "BIND_128": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.weather_observation_time"
+  },
+  "BIND_129": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.wind_gust"
+  },
+  "BIND_130": {
+    "kind": "external",
+    "domain": "sensor",
+    "purpose": "sensor.wind_speed"
+  },
+  "BIND_131": {
+    "kind": "external",
+    "domain": "switch",
+    "purpose": "switch.mower_rain_detection_mower_on_off"
+  },
+  "BIND_132": {
+    "kind": "external",
+    "domain": "weather",
+    "purpose": "weather.primary"
+  },
+  "BIND_133": {
+    "kind": "external",
+    "domain": "weather",
+    "purpose": "weather.secondary"
+  },
+  "MAP_HASH_1": {
+    "kind": "map_hash",
+    "purpose": "Unique native area identifier 1"
+  },
+  "MAP_HASH_2": {
+    "kind": "map_hash",
+    "purpose": "Unique native area identifier 2"
+  },
+  "MAP_HASH_3": {
+    "kind": "map_hash",
+    "purpose": "Unique native area identifier 3"
+  },
+  "MAP_HASH_4": {
+    "kind": "map_hash",
+    "purpose": "Unique native area identifier 4"
+  },
+  "MAP_HASH_5": {
+    "kind": "map_hash",
+    "purpose": "Unique native area identifier 5"
+  },
+  "MAP_HASH_6": {
+    "kind": "map_hash",
+    "purpose": "Unique native area identifier 6"
+  },
+  "DEVICE_1": {
+    "kind": "device",
+    "purpose": "Mower Home Assistant device registry ID"
+  },
+  "NOTIFICATION_1": {
+    "kind": "notification_id",
+    "purpose": "Integration persistent warning notification ID (contains your mower identifier; keep local)"
+  },
+  "NOTIFICATION_2": {
+    "kind": "notification_id",
+    "purpose": "Integration persistent warning notification ID (contains your mower identifier; keep local)"
+  },
+  "RECOVERY_BUDGET": {
+    "kind": "helper",
+    "entity": "input_number.mower_auto_resume_budget_used",
+    "purpose": "Persistent automatic recovery dispatch count; operator resets after inspecting cause"
+  },
+  "SCHEDULE_HOLD": {
+    "kind": "helper",
+    "entity": "input_boolean.mower_zone_group_hold",
+    "purpose": "Operator-controlled scheduling hold for Zone A and Zone C"
+  }
+}

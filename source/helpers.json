@@ -1,0 +1,348 @@
+{
+  "BIND_033": {},
+  "BIND_034": {},
+  "BIND_035": {},
+  "BIND_036": {
+    "initial": true
+  },
+  "BIND_037": {},
+  "BIND_038": {},
+  "BIND_039": {},
+  "BIND_040": {},
+  "BIND_041": {},
+  "BIND_042": {},
+  "BIND_044": {
+    "has_date": true,
+    "has_time": false
+  },
+  "BIND_045": {
+    "has_date": true,
+    "has_time": true
+  },
+  "BIND_046": {
+    "has_date": true,
+    "has_time": false
+  },
+  "BIND_047": {
+    "has_date": true,
+    "has_time": true
+  },
+  "BIND_048": {
+    "has_date": true,
+    "has_time": false
+  },
+  "BIND_049": {
+    "has_date": true,
+    "has_time": false
+  },
+  "BIND_051": {
+    "min": 0,
+    "max": 90,
+    "step": 90,
+    "mode": "box",
+    "unit_of_measurement": "\u00b0"
+  },
+  "BIND_052": {
+    "min": 0,
+    "max": 90,
+    "step": 90,
+    "mode": "box",
+    "unit_of_measurement": "\u00b0"
+  },
+  "BIND_053": {
+    "min": 15,
+    "max": 50,
+    "step": 1,
+    "mode": "box",
+    "unit_of_measurement": "mph",
+    "initial": 25
+  },
+  "BIND_054": {
+    "min": 0,
+    "max": 20,
+    "step": 1,
+    "mode": "box"
+  },
+  "BIND_055": {
+    "min": 0,
+    "max": 99,
+    "step": 1,
+    "mode": "box"
+  },
+  "BIND_056": {
+    "min": 0,
+    "max": 1,
+    "step": 1,
+    "mode": "box"
+  },
+  "BIND_057": {
+    "min": 5,
+    "max": 60,
+    "step": 5,
+    "mode": "box",
+    "unit_of_measurement": "min",
+    "initial": 20
+  },
+  "BIND_058": {
+    "min": 0,
+    "max": 3,
+    "step": 1,
+    "mode": "box"
+  },
+  "BIND_059": {
+    "min": 0,
+    "max": 95,
+    "step": 1,
+    "mode": "box",
+    "initial": 95
+  },
+  "BIND_060": {
+    "min": 0,
+    "max": 99,
+    "step": 1,
+    "mode": "box"
+  },
+  "BIND_061": {
+    "min": 5,
+    "max": 30,
+    "step": 1,
+    "mode": "box",
+    "unit_of_measurement": "min",
+    "initial": 10
+  },
+  "BIND_062": {
+    "min": 0,
+    "max": 100,
+    "step": 1,
+    "mode": "box"
+  },
+  "BIND_063": {
+    "min": 0,
+    "max": 1000,
+    "step": 0.001,
+    "mode": "box"
+  },
+  "BIND_064": {
+    "min": 0,
+    "max": 100,
+    "step": 1,
+    "mode": "box"
+  },
+  "BIND_065": {
+    "min": 0,
+    "max": 1000,
+    "step": 0.001,
+    "mode": "box"
+  },
+  "BIND_066": {
+    "min": 0,
+    "max": 99,
+    "step": 1,
+    "mode": "box"
+  },
+  "BIND_067": {
+    "min": 0,
+    "max": 2,
+    "step": 0.01,
+    "mode": "box"
+  },
+  "BIND_068": {
+    "min": 0,
+    "max": 10,
+    "step": 1,
+    "mode": "box"
+  },
+  "BIND_071": {
+    "options": [
+      "Idle",
+      "Zone A",
+      "Zone B",
+      "Zone C",
+      "Zone D",
+      "Zone E"
+    ]
+  },
+  "BIND_072": {
+    "options": [
+      "Idle",
+      "Group A",
+      "Group B"
+    ]
+  },
+  "BIND_073": {
+    "options": [
+      "Idle",
+      "Charging",
+      "Launching",
+      "Mowing",
+      "Returning",
+      "Complete",
+      "Deferred",
+      "Failed",
+      "Manual observed"
+    ]
+  },
+  "BIND_074": {
+    "options": [
+      "Idle",
+      "Zone A and Zone C",
+      "Zone E",
+      "Zone B",
+      "Zone D",
+      "Zone A",
+      "Zone C"
+    ]
+  },
+  "BIND_075": {
+    "options": [
+      "Idle",
+      "Zone A",
+      "Zone B",
+      "Zone C",
+      "Zone D",
+      "Zone E"
+    ]
+  },
+  "BIND_076": {
+    "options": [
+      "Idle",
+      "Group A",
+      "Group B"
+    ]
+  },
+  "BIND_077": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_078": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_079": {
+    "min": 0,
+    "max": 10,
+    "mode": "text"
+  },
+  "BIND_080": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_081": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_082": {
+    "min": 0,
+    "max": 10,
+    "mode": "text"
+  },
+  "BIND_083": {
+    "min": 0,
+    "max": 10,
+    "mode": "text"
+  },
+  "BIND_084": {
+    "min": 0,
+    "max": 10,
+    "mode": "text"
+  },
+  "BIND_085": {
+    "min": 0,
+    "max": 100,
+    "mode": "text"
+  },
+  "BIND_086": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_087": {
+    "min": 0,
+    "max": 10,
+    "mode": "text"
+  },
+  "BIND_088": {
+    "min": 0,
+    "max": 40,
+    "mode": "text"
+  },
+  "BIND_089": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_090": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_091": {
+    "min": 0,
+    "max": 100,
+    "mode": "text"
+  },
+  "BIND_092": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_093": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_094": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_095": {
+    "min": 0,
+    "max": 10,
+    "mode": "text"
+  },
+  "BIND_096": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_097": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_098": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_099": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_100": {
+    "min": 0,
+    "max": 255,
+    "mode": "text"
+  },
+  "BIND_101": {
+    "min": 0,
+    "max": 10,
+    "mode": "text"
+  },
+  "RECOVERY_BUDGET": {
+    "name": "Mower automatic recovery budget used",
+    "min": 0,
+    "max": 3,
+    "step": 1,
+    "mode": "box"
+  },
+  "SCHEDULE_HOLD": {
+    "name": "Mower Zone A and C scheduling hold"
+  }
+}
