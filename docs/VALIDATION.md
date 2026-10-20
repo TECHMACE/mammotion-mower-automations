@@ -18,7 +18,7 @@ Use a separate Python 3.14 environment for the pinned Home Assistant check:
 
 ```sh
 python3.14 -m venv .venv-ha
-.venv-ha/bin/pip install -r requirements-dev.txt homeassistant==2026.10.2
+.venv-ha/bin/pip install -r requirements-dev.txt homeassistant==2026.10.2 colorlog==6.10.1
 .venv-ha/bin/python tools/check_ha_config.py
 ```
 
