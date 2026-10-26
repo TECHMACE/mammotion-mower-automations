@@ -6,8 +6,9 @@
 
 - **225 tests passed without skips** in the official Home Assistant 2026.10.4 container with network disabled.
 - Configurable recovery, handoff, calendar/group/rest policies, charging/contact logic and weather policy are implemented. Implementation is not a blanket acceptance result.
-- The expanded native Home Assistant simulator batch is **pending final results**, including the guarded pause/settle/Dock recovery for native `RETURNING`.
-- Use the [lab behavior matrix](../lab/BEHAVIOR_MATRIX.md) for scenario-level results and remaining work. Do not carry an alpha.1 acceptance result forward as proof of a changed alpha.2 path.
+- The expanded local native HA simulator batch **passed**, including in-place resume, charger-free handoff, bounded pause/settle/Dock return recovery, charging-contact checks, forecast gates, notifications, map quarantine and full restart. [Detailed results and revision boundaries](../lab/VALIDATION_STATUS.md).
+- See the [feature mapping](FEATURE_PARITY.md) and [lab behavior matrix](../lab/BEHAVIOR_MATRIX.md) for coverage. GitHub repeats the final source in three independent, fresh isolated labs: baseline, recovery and policy.
+- All seven [GitHub checks passed](https://github.com/TECHMACE/mammotion-mower-automations/actions/runs/40408085508) on code commit `aec73d3b9f495722f86fc457bc7bb1e80c00bc8d`, including three independent fresh native labs. Subsequent changes only record these results.
 - No production Home Assistant deployment or physical mower commissioning is claimed for this integration release.
 
 Earlier alpha.1 simulator runs exercised wizard setup, delayed acknowledgement, charging/resume, checkpoint persistence, map-change quarantine, restart disarming and notification behavior. Those are historical evidence, not a substitute for the current expanded run. Every mower action in that lab was simulated.

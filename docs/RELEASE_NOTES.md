@@ -12,7 +12,7 @@ Recovery waits for fresh motion evidence, respects its attempt budget and keeps 
 
 Optional external-work protection defaults off. If you enable it, the coordinator can make a protective return for a job you started elsewhere. It does not adopt or restart that job. Inspect it before clearing the hold.
 
-**Still an alpha.** The current code passed 225 tests without skips in the official Home Assistant 2026.10.4 container with network disabled. Final expanded native simulator scenarios are pending; see the [behavior matrix](../lab/BEHAVIOR_MATRIX.md) and [validation notes](INTEGRATION_VALIDATION.md). No physical mower commissioning is claimed. A fake mower cannot prove real traction, coverage or clean charging contacts.
+**Still an alpha.** The current code passed 225 tests without skips in the official Home Assistant 2026.10.4 container with network disabled. Expanded local native simulator scenarios and all seven GitHub checks passed; see the [behavior matrix](../lab/BEHAVIOR_MATRIX.md) and [validation notes](INTEGRATION_VALIDATION.md). No physical mower commissioning is claimed. A fake mower cannot prove real traction, coverage or clean charging contacts.
 
 ## Make it yours
 

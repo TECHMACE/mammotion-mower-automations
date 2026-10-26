@@ -11,7 +11,7 @@
 - Recover stalled native returns through pause, fresh settled telemetry and Dock, avoiding Mammotion's Dock-while-returning cancellation behavior.
 - Confirm charging contact through sustained contact and battery gain; bound redock attempts.
 - Add optional protection of unowned work without checkpoint adoption, automatic restart or silent handoff of ownership.
-- Current software validation: 225 tests, no skips, official HA 2026.10.4 container with network disabled. Expanded native simulator acceptance is pending; physical commissioning remains unproved.
+- Current software validation: 225 tests, no skips, official HA 2026.10.4 container with network disabled. Expanded local native simulator acceptance and all seven GitHub checks passed; physical commissioning remains unproved.
 
 ### Earlier Mower Coordinator preview (0.2.0-alpha.1)
 
