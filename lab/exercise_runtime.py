@@ -63,7 +63,10 @@ def run(from_checkpoint=False, fresh=False, map_change=False):
  print('Progress55 saved and reserve return observed',flush=True)
  set_fake(mower='docked',activity='MODE_READY',charging=True,battery=40)
  wait('binary_sensor.lab_charging','on')
- assert 'contact' in state('sensor.lab_coordinator_explanation')['state'].lower()
+ for _ in range(20):
+  if 'contact' in state('sensor.lab_coordinator_explanation')['state'].lower():break
+  time.sleep(.25)
+ else:raise AssertionError('Controller did not explain charging-contact confirmation')
  set_fake(battery=100)
  print('Waiting for stable charging before checkpoint resume...',flush=True)
  for n in range(150):
