@@ -6,7 +6,7 @@ Mammotion Mower Coordinator helps Home Assistant decide **what to mow, when to c
 
 The everyday setup uses Home Assistant screens. No YAML editing or copying someone else's lawn settings. Start with the basics; advanced weather, seasonal groups and recharge options can wait.
 
-**Release:** `v0.2.0-alpha.2`. This is a community alpha for Mammotion mowers. Software and simulated mowing tests passed; each owner still needs a supervised first run. It is available as a HACS **custom repository**, not a default-store listing.
+**Release:** `v0.2.0-alpha.2`. This is a community alpha for Mammotion mowers. Software and simulated mowing tests passed; each owner still needs a supervised first run. It is available as a HACS **custom repository**. [Default catalog submission #12760](https://github.com/hacs/default/pull/12760) is awaiting maintainer review; the custom-repository steps below still apply. The separate Mammotion-HA connection also needs to be installed.
 
 ## The short version
 

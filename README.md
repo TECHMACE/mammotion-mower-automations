@@ -18,7 +18,7 @@ The coordinator keeps unfinished work, waits for credible movement reports befor
 
 This is a development alpha for Mammotion, not a certified universal mower controller. Model compatibility and supervised physical commissioning remain necessary. Keep native safety protections on, and run only one coordinator. The original YAML reference is still available below.
 
-Install through HACS as a **custom repository** of type **Integration**. Select **v0.2.0-alpha.2** (enable beta versions if needed), restart HA, then add **Mammotion Mower Coordinator** under Devices & services. The [start-here guide](docs/START_HERE.md) walks through HACS installation too. This is not yet a default HACS catalog listing.
+Install through HACS as a **custom repository** of type **Integration**. Select **v0.2.0-alpha.2** (enable beta versions if needed), restart HA, then add **Mammotion Mower Coordinator** under Devices & services. The [start-here guide](docs/START_HERE.md) walks through HACS installation too. [Default HACS catalog submission #12760](https://github.com/hacs/default/pull/12760) is awaiting maintainer review. Until it is accepted, use the custom-repository steps. Mammotion-HA remains a separate prerequisite.
 
 ## Fork it. Make it yours. Spread the love.
 
