@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Allow one guarded same-day reattachment after a newly established, stable charging session newer than the last owned-controller start. Existing cross-day limits and checkpoint identity checks remain.
+- Preserve the three-attempt return-recovery budget across brief movement; repeated channel failures no longer reset it within the active return episode.
+- Added 14 regression cases; 65 synthetic tests now pass.
+
 ## 0.1.0-alpha.1
 
 - Initial public reference release: 26 automations, 8 scripts and 67 helper definitions.

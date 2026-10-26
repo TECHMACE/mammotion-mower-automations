@@ -1,6 +1,6 @@
 # Validation and evidence
 
-The reviewed public package passed **51 synthetic tests** and an **isolated Home Assistant Core 2026.10.2 configuration check**. The check compiled fixture bindings into a temporary configuration and ran Home Assistant's configuration validator; it did not start Home Assistant or contact a live installation or mower. The check also rejects validation errors that can appear in output despite a zero CLI exit status.
+The reviewed public package passed **65 synthetic tests** and an **isolated Home Assistant Core 2026.10.2 configuration check**. The check compiled fixture bindings into a temporary configuration and ran Home Assistant's configuration validator; it did not start Home Assistant or contact a live installation or mower. The check also rejects validation errors that can appear in output despite a zero CLI exit status.
 
 These results apply to the reviewed public package, not arbitrary local adaptations. Your generated package still needs validation on your installation. Earlier development test counts are not treated as tests rerun against this release.
 

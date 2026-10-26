@@ -1404,9 +1404,8 @@
                             ],
                             "sequence": [
                               {
-                                "variables": {
-                                  "recovery_attempts": 0
-                                }
+                                "alias": "Movement preserves the remaining return-recovery budget",
+                                "delay": "00:00:00"
                               }
                             ]
                           }
@@ -3680,7 +3679,8 @@
               "conditions": [
                 {
                   "condition": "template",
-                  "value_template": "{% set saved = as_datetime(states('@@BIND_048@@'), none) %}{% set today = now().strftime('%Y-%m-%d') %}{{ safe_dock | bool(false) and is_state('@@BIND_104@@', 'home') and saved is not none and saved.date() <= now().date() and 0 <= checkpoint | int(0) < 100 and not is_state('@@BIND_039@@', 'on') and (today_at('09:00') <= now() < today_at('19:00')) and ((saved.date() == now().date() and states('@@BIND_056@@') | int(0) < 1) or (saved.date() < now().date() and states('@@BIND_079@@') != today)) }}"
+                  "alias": "Allow one reattachment per newly established charging session, including after assisted docking",
+                  "value_template": "{% set saved = as_datetime(states('@@BIND_048@@'), none) %}{% set today = now().strftime('%Y-%m-%d') %}{{ safe_dock | bool(false) and is_state('@@BIND_104@@', 'home') and saved is not none and saved.date() <= now().date() and 0 <= checkpoint | int(0) < 100 and not is_state('@@BIND_039@@', 'on') and (today_at('09:00') <= now() < today_at('19:00')) and ((saved.date() == now().date() and (states('@@BIND_056@@') | int(0) < 1 or (is_state('@@BIND_116@@','MODE_READY') and as_timestamp(states.@@BIND_029@@.last_changed,0) > as_timestamp(state_attr('@@BIND_111@@','last_triggered'),0) and as_timestamp(now()) - as_timestamp(states.@@BIND_029@@.last_changed,0) >= 60))) or (saved.date() < now().date() and states('@@BIND_079@@') != today)) }}"
                 },
                 {
                   "condition": "template",
