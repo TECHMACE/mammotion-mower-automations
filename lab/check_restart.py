@@ -29,6 +29,8 @@ def run():
     assert float(state('sensor.lab_coordinator_saved_progress')) == checkpoint
     assert state('sensor.lab_coordinator_remaining_areas') == queue
     assert state('sensor.lab_coordinator_recovery_attempts') == retries
+    retry_attributes = api('/api/states/sensor.lab_coordinator_recovery_attempts', token=token)['attributes']
+    assert all(key in retry_attributes for key in ('resume_attempts','return_attempts','limit_per_kind')), retry_attributes
     assert int(state('sensor.lab_commands')) == 0
     print('Full HA restart: integration loaded, checkpoint/queue/retry count retained, disarmed and no device command')
 

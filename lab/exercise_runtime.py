@@ -62,7 +62,8 @@ def run(from_checkpoint=False, fresh=False, map_change=False):
  assert float(state('sensor.lab_coordinator_saved_progress')['state'])==55
  print('Progress55 saved and reserve return observed',flush=True)
  set_fake(mower='docked',activity='MODE_READY',charging=True,battery=40)
- wait('sensor.lab_coordinator_status','charging')
+ wait('binary_sensor.lab_charging','on')
+ assert 'contact' in state('sensor.lab_coordinator_explanation')['state'].lower()
  set_fake(battery=100)
  print('Waiting for stable charging before checkpoint resume...',flush=True)
  for n in range(150):
