@@ -1,0 +1,19 @@
+homeassistant:
+  name: Mower simulation lab
+  latitude: 40
+  longitude: -100
+  elevation: 100
+  unit_system: metric
+  time_zone: America/New_York
+  country: US
+frontend:
+config:
+http:
+api:
+websocket_api:
+auth:
+onboarding:
+system_log:
+logger:
+  default: warning
+mower_simulator:

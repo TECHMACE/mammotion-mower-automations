@@ -1,0 +1,19 @@
+{
+  "domain": "mower_coordinator",
+  "name": "Mammotion Mower Coordinator",
+  "after_dependencies": [
+    "notify",
+    "persistent_notification"
+  ],
+  "codeowners": [
+    "@TECHMACE"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/TECHMACE/mammotion-mower-automations/blob/main/docs/START_HERE.md",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/TECHMACE/mammotion-mower-automations/issues",
+  "requirements": [],
+  "version": "0.2.0-alpha.2"
+}

@@ -1,0 +1,1 @@
+{"config":{"step":{"user":{"title":"Mower simulation lab","description":"Creates a fake mower for isolated testing. No physical device is contacted."}},"abort":{"already_configured":"The simulator is already configured."}}}
