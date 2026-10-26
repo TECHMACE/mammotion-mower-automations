@@ -2,6 +2,18 @@
 
 `0.2.0-alpha.1` is a development preview on `feat/mower-coordinator`. It is separate from the original YAML reference release. It has not been deployed to the author's working Home Assistant system or tested on a physical mower.
 
+## Verified on October 26, 2026
+
+- **166 tests passed**, with no skips, in the official HA 2026.10.4 container with network disabled.
+- Native seven-step wizard and invalid-input checks created two configurable areas.
+- Delayed acknowledgement produced exactly one start; checkpoint 55% survived reserve-battery return and resumed exactly once after 60 seconds of simulated charging.
+- Completion updated the commissioning evidence visible in HA.
+- A no-go geometry edit with unchanged area IDs quarantined saved work. Reload preserved the 55% checkpoint, disarmed control, and issued no new command.
+- Options reload, modern and legacy notification targets, explicit tests during quiet hours, and delivery failure/recovery passed.
+- Network isolation probes confirmed no default route, an internal-only HA network, and blocked outbound connections.
+
+All mower actions above were simulated. The lab was left with automatic control off and hold on.
+
 ## Reproduce software checks
 
 ```sh

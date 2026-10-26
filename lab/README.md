@@ -18,6 +18,8 @@ python3 lab/exercise_options.py
 
 The runtime acceptance test replaces only its own fixture coordinator entry when `--fresh` is supplied; it refuses unknown or renamed entries. It exercises actual HA services against the fake mower and waits for real charging-stability timers. The options test leaves all-day quiet hours selected and the coordinator disarmed. The map-change scenario deliberately leaves its saved work quarantined for review.
 
+On native Linux, the container runs as UID 0 with all capabilities dropped. Its synthetic configuration directory must therefore be owned by UID 0 (Docker Desktop handles shared-directory ownership differently). Before starting on Linux, run `sudo chown 0:0 lab/config` from this repository. This changes only the lab directory; never point these mounts at a working HA configuration. The source `configuration.yaml` remains readable, and generated credentials stay ignored.
+
 The image is the official `ghcr.io/home-assistant/home-assistant:2026.10.4`. First startup can take a minute. The web interface is `http://127.0.0.1:18123`. `lab/client.py` completes creation of a dedicated test account, keeping its random password and refresh token only in ignored `lab/.evidence/auth.json` (mode 0600). Never publish this file. It does not read production environment variables or credentials. After first creation, finish ordinary HA onboarding in the lab UI if needed. The test driver uses only this fixed loopback URL.
 
 The runtime integration source is mounted read-only from `custom_components/mower_coordinator`. Restart the **lab service only** after Python changes:
@@ -66,3 +68,13 @@ All entities belong to one synthetic device (except the generated lab owner acco
 `mower_simulator.set_state` accepts fields such as `battery`, `progress`, `mower`, `activity`, `error`, `charging`, `rain`, `safety_clear`, `operator_home`, `blade_time`, `mileage`, `delay_ack`, `fail_dock`, `fail_notify`, and `map_revision`, and `map_sync_status`. Synthetic cached geometry is available through dataclass frame lists on the fixture reporting coordinator, including no-go geometry; the synced-status entity has the upstream translation key. The coordinator exercises its full cached map hashing path without service calls or a simulator-only revision shortcut. `no_go_revision` edits a synthetic no-go boundary while preserving area IDs. `mower_simulator.tick` advances fake mowing progress/usage, return-to-dock, or charging deterministically. `delay_ack: true` records start commands without changing mower activity. `fail_dock: true` leaves returns in progress. `fail_notify: true` raises a local delivery failure.
 
 Tests should distinguish captured commands from resulting observations. Simulation proves software behavior only. Physical cutting coverage, traction, route execution and charging contacts remain unverified.
+
+## What the acceptance scripts verify
+
+- `tools/test_lab.py`: container/network isolation, failed egress probes, simulator contract and local notification capture.
+- `exercise_wizard.py`: each native configuration form, invalid input rejection, arbitrary two-area configuration, creation in observation mode.
+- `exercise_runtime.py --fresh`: delayed acknowledgement without duplicate start; cutting-backed 55% checkpoint; reserve return; sustained charging before one resume at 55%; completion evidence updates.
+- `exercise_runtime.py --fresh --map-change`: a no-go boundary edit with unchanged area IDs quarantines the saved checkpoint; entry reload preserves progress and disarms without another start.
+- `exercise_options.py`: native options reload disarms; modern and legacy targets; explicit test during quiet hours; simulated delivery failure and recovery.
+
+These are integration acceptance tests inside HA Container, not evidence that a physical mower executed a route or charged successfully.

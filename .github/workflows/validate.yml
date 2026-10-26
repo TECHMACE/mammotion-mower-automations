@@ -39,6 +39,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+      # With all capabilities dropped, UID 0 cannot bypass a runner-owned
+      # bind directory. Only the synthetic HA config directory needs ownership.
+      - run: sudo chown 0:0 lab/config
       - run: docker compose -f lab/compose.yaml up -d
       - name: Wait for isolated Home Assistant
         run: |
