@@ -85,7 +85,7 @@ Light-rain tolerance is optional and defaults off. It applies to external weathe
 
 Choose supported notification entities and/or legacy notify actions, event types, quiet hours and whether urgent alerts may override quiet hours. A persistent Home Assistant notification is the fallback when no push destination is selected.
 
-The device page shows **Status**, **Explanation**, **Readiness**, **Saved progress**, **Remaining areas**, **Recovery attempts**, **Commissioning** and **Notification delivery**. Readiness reports individual checks; it is a software check, not a certificate that the lawn is clear.
+The device page shows **Status**, **Explanation**, **Readiness**, **Saved progress**, **Remaining areas**, **Recovery attempts**, **Commissioning** and **Notification delivery**. Recovery attempts shows resume attempts, with separate return-attempt and limit attributes in the entity details. Readiness reports individual checks; it is a software check, not a certificate that the lawn is clear.
 
 1. Leave control off and press **Check readiness**. Resolve failed checks.
 2. Press **Send test notification**. Explicit tests bypass quiet hours/event filters.

@@ -20,6 +20,7 @@ class MowerSensor(MowerEntity, SensorEntity):
         return self.runtime.status_value(self.key)
     @property
     def extra_state_attributes(self):
+        if self.key=="retries": return {"resume_attempts":self.runtime.state.retries,"return_attempts":self.runtime.state.return_retries,"limit_per_kind":self.runtime.settings().max_retries}
         if self.key=="readiness": return {"checks":self.runtime.preflight()}
         if self.key=="commissioning": return {"steps":dict(self.runtime.evidence), "physical_validation":"not established by software"}
         if self.key=="explanation": return {"updated_at":self.runtime.updated_at, "mode":"control" if self.runtime.armed else "observe", "next_step":self.runtime.next_step}

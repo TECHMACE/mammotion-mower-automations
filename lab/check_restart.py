@@ -9,6 +9,8 @@ def run():
     def state(entity):
         return api('/api/states/' + entity, token=token, timeout=2)['state']
     checkpoint = float(state('sensor.lab_coordinator_saved_progress'))
+    queue = state('sensor.lab_coordinator_remaining_areas')
+    retries = state('sensor.lab_coordinator_recovery_attempts')
     subprocess.run(['docker', 'compose', '-f', str(Path(__file__).parent / 'compose.yaml'), 'restart', 'homeassistant'], check=True)
     deadline = time.monotonic() + 120
     while time.monotonic() < deadline:
@@ -25,8 +27,10 @@ def run():
     assert state('switch.lab_coordinator_automatic_control') == 'off'
     assert state('switch.lab_coordinator_hold_new_work') == 'on'
     assert float(state('sensor.lab_coordinator_saved_progress')) == checkpoint
+    assert state('sensor.lab_coordinator_remaining_areas') == queue
+    assert state('sensor.lab_coordinator_recovery_attempts') == retries
     assert int(state('sensor.lab_commands')) == 0
-    print('Full HA restart: integration loaded, checkpoint retained, disarmed and no device command')
+    print('Full HA restart: integration loaded, checkpoint/queue/retry count retained, disarmed and no device command')
 
 if __name__ == '__main__':
     run()
