@@ -10,7 +10,7 @@ BASE = "http://127.0.0.1:18123"
 PRIVATE = Path(__file__).parent / ".evidence"
 AUTH = PRIVATE / "auth.json"
 
-def api(path, data=None, token=None, form=False, method=None):
+def api(path, data=None, token=None, form=False, method=None, timeout=30):
     if not path.startswith("/") or path.startswith("//"):
         raise ValueError("Only relative paths on the isolated lab are allowed")
     headers = {}
@@ -20,7 +20,7 @@ def api(path, data=None, token=None, form=False, method=None):
         headers["Content-Type"] = "application/x-www-form-urlencoded" if form else "application/json"
         body = urllib.parse.urlencode(data).encode() if form else json.dumps(data).encode()
     req = urllib.request.Request(BASE+path,body,headers,method=method)
-    with urllib.request.urlopen(req,timeout=30) as response:
+    with urllib.request.urlopen(req,timeout=timeout) as response:
         content = response.read()
         return json.loads(content) if content else {}
 

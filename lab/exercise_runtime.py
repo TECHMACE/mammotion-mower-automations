@@ -50,7 +50,12 @@ def run(from_checkpoint=False, fresh=False, map_change=False):
   wait('sensor.lab_coordinator_status','quarantined')
   assert float(state('sensor.lab_coordinator_saved_progress')['state'])==55
   assert len([c for c in state('sensor.lab_commands')['attributes']['records'] if c['action']=='start_mow'])==before
-  print('Same-area-ID no-go geometry change quarantined checkpoint55; no dispatch',flush=True)
+  api('/api/config/config_entries/entry/'+entry+'/reload',{},token)
+  time.sleep(1)
+  assert state('switch.lab_coordinator_automatic_control')['state']=='off'
+  assert float(state('sensor.lab_coordinator_saved_progress')['state'])==55
+  assert len([c for c in state('sensor.lab_commands')['attributes']['records'] if c['action']=='start_mow'])==before
+  print('Same-area-ID no-go geometry change quarantined checkpoint55; reload preserved checkpoint and disarmed; no dispatch',flush=True)
   return
  set_fake(battery=25,blade_time=65)
  wait('lawn_mower.lab_mower','returning')
@@ -72,7 +77,8 @@ def run(from_checkpoint=False, fresh=False, map_change=False):
  wait('sensor.lab_coordinator_status','mowing')
  set_fake(progress=100,blade_time=120,mower='idle',activity='MODE_READY')
  time.sleep(1)
- assert state('sensor.lab_coordinator_commissioning')['attributes']['steps']['completion_observed']
+ steps=state('sensor.lab_coordinator_commissioning')['attributes']['steps']
+ assert all(steps[k] for k in ['launch_observed','completion_observed','charging_observed']),steps
  print('Checkpoint55 resumed once and completion recorded',flush=True)
  call('switch','turn_off',{'entity_id':'switch.lab_coordinator_automatic_control'})
  call('switch','turn_on',{'entity_id':'switch.lab_coordinator_hold_new_work'})

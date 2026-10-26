@@ -27,7 +27,13 @@ cancel_job:
     entity:
       domain: lawn_mower
 get_geojson:
-  name: Capture simulated telemetry refresh
+  name: Read simulated GeoJSON
+  target:
+    entity:
+      domain: lawn_mower
+
+get_map_data:
+  name: Read simulated cached map
   target:
     entity:
       domain: lawn_mower
