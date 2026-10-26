@@ -1,0 +1,250 @@
+{
+  "title": "Mower Coordinator",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Welcome to Mower Coordinator",
+        "description": "Choose an already configured Mammotion mower. This companion organizes mowing areas, preserves progress, and explains why work is waiting. Setup only reads your configuration; it does not move the mower. Your mower must already be mapped in its app. This alpha starts in observation mode.",
+        "data": {
+          "name": "Name for this coordinator",
+          "mower_entity": "Mower"
+        }
+      },
+      "bindings": {
+        "title": "Check the mower sensors",
+        "description": "Suggested sensors are selected only when their device association is unambiguous. Check each choice. Battery and progress must report percentages. Raw activity must match the supported adapter. Choose the current Self check sensor for mower health: its clear state is normal. Do not select historical error slots such as Error 1 code; those can retain old faults after recovery. Position and blade time are used as activity evidence. Rain, operator presence, and a safety permission sensor are required before control can be enabled; they can be omitted while observing. For manual safety permission, create a Toggle helper in Settings > Devices & services > Helpers, name it Lawn safety permission, and leave it off. Select that helper here, or use an existing safety binary sensor. Turn manual permission on only after inspecting property conditions. This is supervised permission, not obstruction detection; off or unavailable blocks movement. Optional weather adds protection; missing configured weather holds mowing. No sensor is bypassed with a fabricated safe value.",
+        "data": {
+          "battery_entity": "Battery percentage",
+          "progress_entity": "Mowing progress percentage",
+          "charging_entity": "Charging sensor",
+          "activity_entity": "Raw mower activity mode",
+          "error_entity": "Current mower health (Self check)",
+          "rain_entity": "Rain sensor (on means wet)",
+          "person_entity": "Operator presence",
+          "weather_entity": "Optional weather source",
+          "tracker_entity": "Mower position tracker",
+          "blade_time_entity": "Blade usage time",
+          "safety_entity": "Property safety permission (Toggle helper or binary sensor)"
+        }
+      },
+      "zone": {
+        "title": "Configure a mowing area",
+        "description": "Give this logical area a name and select its native mower area switches. Each switch must have a positive map hash and belong to this mower. Do not assign a native area twice. Enter one direction angle, such as 0, or a comma-separated sequence such as 0,90. The direction advances after verified completion; a resumed job keeps its original direction. Settings must be supported by your mower; runtime preflight blocks unsupported profiles. Optional cutting height and speed are explicit overrides, not guessed app settings.",
+        "data": {
+          "name": "Area name",
+          "area_entities": "Native mower areas",
+          "angles": "Direction angles in degrees, separated by commas",
+          "spacing_cm": "Lane spacing (cm)",
+          "perimeter_laps": "Perimeter passes",
+          "interval_days": "Days between completed cuts",
+          "minimum_battery": "Minimum departure battery (%)",
+          "blade_height": "Optional cutting height override (mm)",
+          "speed": "Optional mowing speed override (m/s)"
+        }
+      },
+      "more_areas": {
+        "title": "Add another area?",
+        "description": "You have configured {count} area(s). Add another area or continue to operating rules. There is no fixed five-area layout.",
+        "data": {
+          "add_another": "Add another mowing area"
+        }
+      },
+      "rules": {
+        "title": "Choose operating rules",
+        "description": "Times use Home Assistant\u2019s timezone. This alpha supports a daytime window that ends after it starts. The reserve is the battery level for returning; it is not a promise that docking will succeed. A higher reserve may be needed for your property. Weather thresholds apply only when an external weather source is selected. Wind is normalized to meters per second. Freshness is the maximum accepted weather age. Automatic obstruction recovery and charger-free handoff remain disabled in this alpha.",
+        "data": {
+          "start_time": "Earliest mowing time",
+          "end_time": "Latest mowing time",
+          "reserve_battery": "Return battery reserve (%)",
+          "resume_battery": "Battery required to resume (%)",
+          "weather_max_age": "Maximum weather age (seconds)",
+          "wind_limit_mps": "Maximum wind (m/s)"
+        }
+      },
+      "notifications": {
+        "title": "Choose notifications",
+        "description": "Choose existing notification destinations and the updates you want. Leave destinations empty to use Home Assistant status only. Quiet hours suppress routine messages; equal start and end times disable quiet hours. Urgent exceptions apply only if you explicitly enable them. No message is sent during setup. After setup, use Test notification and confirm it arrived\u2014an accepted action alone does not prove delivery.",
+        "data": {
+          "targets": "Notification entities",
+          "legacy_actions": "Other notification actions (for example, a mobile app)",
+          "events": "Events to receive",
+          "quiet_start": "Quiet hours start",
+          "quiet_end": "Quiet hours end",
+          "urgent_override": "Allow needs-attention messages during quiet hours"
+        }
+      },
+      "review": {
+        "title": "Review and start observing",
+        "description": "Areas: {areas}\n\nOperating window: {window}\n\n{weather}\n\n{readiness}\n\nSaving starts observation mode only. Read the readiness and status entities, test notifications, and check the setup guide. No mower movement is part of setup. Software checks cannot prove physical cutting or docking. A first normal mow must be supervised on an approved test installation. Existing saved progress is never relabeled to a changed map or profile. Saving changes disarms control again.",
+        "data": {
+          "understood": "I understand that setup starts observation only and physical operation is not yet verified"
+        }
+      }
+    },
+    "error": {
+      "missing_entity": "Choose an existing entity of the required type.",
+      "wrong_device": "This entity does not belong to the selected mower.",
+      "duplicate_binding": "Choose distinct telemetry entities for each required role.",
+      "invalid_name": "Enter a name between 1 and 80 characters.",
+      "invalid_zone": "Enter a name and one or more distinct native area switches.",
+      "overlapping_areas": "A native area is already assigned to another mowing area.",
+      "invalid_angles": "Enter 1\u201312 whole-number angles between 0 and 180, separated by commas.",
+      "invalid_number": "Enter a finite number within the displayed range.",
+      "invalid_area_hash": "A selected switch has no valid native map hash.",
+      "invalid_window": "Enter valid times. Mowing must end later the same day than it starts.",
+      "invalid_battery": "The resume target and every area\u2019s minimum departure battery must exceed the return reserve.",
+      "missing_action": "This notification action is no longer available.",
+      "invalid_events": "Choose events from the provided list.",
+      "confirmation_required": "Read the summary and acknowledge observation-only setup.",
+      "last_zone": "Keep at least one mowing area configured.",
+      "invalid_config": "Notification settings must be a configuration object.",
+      "unknown_option": "An unknown notification option was supplied.",
+      "invalid_notify_entity": "Choose valid notification entities.",
+      "invalid_notify_action": "Choose an existing specific notification action, not a broadcast or generic action.",
+      "too_many_destinations": "Choose at most ten notification destinations.",
+      "invalid_event": "Choose events from the provided list.",
+      "invalid_time": "Enter a valid notification time.",
+      "invalid_boolean": "Choose on or off for urgent exceptions."
+    },
+    "abort": {
+      "already_configured": "This mower already has a coordinator."
+    }
+  },
+  "options": {
+    "step": {
+      "bindings": {
+        "title": "Check the mower sensors",
+        "description": "Suggested sensors are selected only when their device association is unambiguous. Check each choice. Battery and progress must report percentages. Raw activity must match the supported adapter. Choose the current Self check sensor for mower health: its clear state is normal. Do not select historical error slots such as Error 1 code; those can retain old faults after recovery. Position and blade time are used as activity evidence. Rain, operator presence, and a safety permission sensor are required before control can be enabled; they can be omitted while observing. For manual safety permission, create a Toggle helper in Settings > Devices & services > Helpers, name it Lawn safety permission, and leave it off. Select that helper here, or use an existing safety binary sensor. Turn manual permission on only after inspecting property conditions. This is supervised permission, not obstruction detection; off or unavailable blocks movement. Optional weather adds protection; missing configured weather holds mowing. No sensor is bypassed with a fabricated safe value.",
+        "data": {
+          "battery_entity": "Battery percentage",
+          "progress_entity": "Mowing progress percentage",
+          "charging_entity": "Charging sensor",
+          "activity_entity": "Raw mower activity mode",
+          "error_entity": "Current mower health (Self check)",
+          "rain_entity": "Rain sensor (on means wet)",
+          "person_entity": "Operator presence",
+          "weather_entity": "Optional weather source",
+          "tracker_entity": "Mower position tracker",
+          "blade_time_entity": "Blade usage time",
+          "safety_entity": "Property safety permission (Toggle helper or binary sensor)"
+        }
+      },
+      "zone": {
+        "title": "Configure a mowing area",
+        "description": "Give this logical area a name and select its native mower area switches. Each switch must have a positive map hash and belong to this mower. Do not assign a native area twice. Enter one direction angle, such as 0, or a comma-separated sequence such as 0,90. The direction advances after verified completion; a resumed job keeps its original direction. Settings must be supported by your mower; runtime preflight blocks unsupported profiles. Optional cutting height and speed are explicit overrides, not guessed app settings.",
+        "data": {
+          "name": "Area name",
+          "area_entities": "Native mower areas",
+          "angles": "Direction angles in degrees, separated by commas",
+          "spacing_cm": "Lane spacing (cm)",
+          "perimeter_laps": "Perimeter passes",
+          "interval_days": "Days between completed cuts",
+          "minimum_battery": "Minimum departure battery (%)",
+          "blade_height": "Optional cutting height override (mm)",
+          "speed": "Optional mowing speed override (m/s)"
+        }
+      },
+      "rules": {
+        "title": "Choose operating rules",
+        "description": "Times use Home Assistant\u2019s timezone. This alpha supports a daytime window that ends after it starts. The reserve is the battery level for returning; it is not a promise that docking will succeed. A higher reserve may be needed for your property. Weather thresholds apply only when an external weather source is selected. Wind is normalized to meters per second. Freshness is the maximum accepted weather age. Automatic obstruction recovery and charger-free handoff remain disabled in this alpha.",
+        "data": {
+          "start_time": "Earliest mowing time",
+          "end_time": "Latest mowing time",
+          "reserve_battery": "Return battery reserve (%)",
+          "resume_battery": "Battery required to resume (%)",
+          "weather_max_age": "Maximum weather age (seconds)",
+          "wind_limit_mps": "Maximum wind (m/s)"
+        }
+      },
+      "notifications": {
+        "title": "Choose notifications",
+        "description": "Choose existing notification destinations and the updates you want. Leave destinations empty to use Home Assistant status only. Quiet hours suppress routine messages; equal start and end times disable quiet hours. Urgent exceptions apply only if you explicitly enable them. No message is sent during setup. After setup, use Test notification and confirm it arrived\u2014an accepted action alone does not prove delivery.",
+        "data": {
+          "targets": "Notification entities",
+          "legacy_actions": "Other notification actions (for example, a mobile app)",
+          "events": "Events to receive",
+          "quiet_start": "Quiet hours start",
+          "quiet_end": "Quiet hours end",
+          "urgent_override": "Allow needs-attention messages during quiet hours"
+        }
+      },
+      "review": {
+        "title": "Review and start observing",
+        "description": "Areas: {areas}\n\nOperating window: {window}\n\n{weather}\n\n{readiness}\n\nSaving starts observation mode only. Read the readiness and status entities, test notifications, and check the setup guide. No mower movement is part of setup. Software checks cannot prove physical cutting or docking. A first normal mow must be supervised on an approved test installation. Existing saved progress is never relabeled to a changed map or profile. Saving changes disarms control again.",
+        "data": {
+          "understood": "I understand that setup starts observation only and physical operation is not yet verified"
+        }
+      },
+      "init": {
+        "title": "Mower configuration",
+        "description": "Edit your settings, then choose Review and save to apply them. Leaving without saving discards these edits. Applying changes disarms control and retains saved job evidence.",
+        "menu_options": {
+          "bindings": "Sensors and optional weather",
+          "zones": "Add, edit, or remove areas",
+          "rules": "Operating hours and battery rules",
+          "notifications": "Notification destinations and preferences",
+          "review": "Review and save"
+        }
+      },
+      "zones": {
+        "title": "Choose an area to edit",
+        "description": "Renaming an area preserves its internal identity. Changing native areas or a cutting profile can make an existing checkpoint incompatible; the coordinator will hold it for review.",
+        "data": {
+          "zone": "Area"
+        }
+      },
+      "zone_action": {
+        "title": "Edit this area",
+        "menu_options": {
+          "zone": "Edit area and profile",
+          "delete_zone": "Remove area",
+          "init": "Back to settings"
+        }
+      },
+      "delete_zone": {
+        "title": "Remove this area?",
+        "description": "This removes the area from future scheduling, not from your mower map. Saved work is retained as evidence and cannot be silently reassigned. At least one configured area is required.",
+        "data": {
+          "confirm_delete": "Remove this area from the coordinator"
+        }
+      }
+    },
+    "error": {
+      "missing_entity": "Choose an existing entity of the required type.",
+      "wrong_device": "This entity does not belong to the selected mower.",
+      "duplicate_binding": "Choose distinct telemetry entities for each required role.",
+      "invalid_name": "Enter a name between 1 and 80 characters.",
+      "invalid_zone": "Enter a name and one or more distinct native area switches.",
+      "overlapping_areas": "A native area is already assigned to another mowing area.",
+      "invalid_angles": "Enter 1\u201312 whole-number angles between 0 and 180, separated by commas.",
+      "invalid_number": "Enter a finite number within the displayed range.",
+      "invalid_area_hash": "A selected switch has no valid native map hash.",
+      "invalid_window": "Enter valid times. Mowing must end later the same day than it starts.",
+      "invalid_battery": "The resume target and every area\u2019s minimum departure battery must exceed the return reserve.",
+      "missing_action": "This notification action is no longer available.",
+      "invalid_events": "Choose events from the provided list.",
+      "confirmation_required": "Read the summary and acknowledge observation-only setup.",
+      "last_zone": "Keep at least one mowing area configured.",
+      "invalid_config": "Notification settings must be a configuration object.",
+      "unknown_option": "An unknown notification option was supplied.",
+      "invalid_notify_entity": "Choose valid notification entities.",
+      "invalid_notify_action": "Choose an existing specific notification action, not a broadcast or generic action.",
+      "too_many_destinations": "Choose at most ten notification destinations.",
+      "invalid_event": "Choose events from the provided list.",
+      "invalid_time": "Enter a valid notification time.",
+      "invalid_boolean": "Choose on or off for urgent exceptions."
+    }
+  },
+  "selector": {
+    "notification_event": {
+      "options": {
+        "attention": "Needs attention",
+        "complete": "Area completed",
+        "charging": "Returning or charging",
+        "resumed": "Mowing resumed",
+        "started": "Mowing started",
+        "hold": "Work waiting or held"
+      }
+    }
+  }
+}

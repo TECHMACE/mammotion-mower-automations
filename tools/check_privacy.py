@@ -15,20 +15,45 @@ PATTERNS={
     'mower serial in notification':r'mammotion_[A-Za-z0-9-]+_(?:warnings|self_check)',
 }
 
+# Public lab endpoints and RFC 5737 documentation address only. These are
+# deliberate test constants, not a blanket exemption for files under lab/.
+PUBLIC_TEST_ADDRESSES = {
+    'tools/check_privacy.py': {'0.0.0.0', '1.1.1.1', '127.0.0.1', '192.0.2.1'},
+    'lab/README.md': {'127.0.0.1'},
+    'docs/INTEGRATION_VALIDATION.md': {'127.0.0.1'},
+    'lab/client.py': {'127.0.0.1'},
+    'lab/compose.yaml': {'127.0.0.1'},
+    'lab/proxy.py': {'0.0.0.0'},
+    'tools/test_lab.py': {'1.1.1.1', '127.0.0.1', '192.0.2.1'},
+}
+
 def check():
-    result=subprocess.run(['git','ls-files','-z'],cwd=ROOT,capture_output=True,text=True,check=True)
+    result=subprocess.run(['git','ls-files','--cached','--others','--exclude-standard','-z'],cwd=ROOT,capture_output=True,text=True,check=True)
     failures=[]
-    for name in result.stdout.split('\0'):
+    for name in sorted(set(result.stdout.split('\0'))):
         if not name:continue
         if name.startswith(('local/','build/','.venv')) or name.endswith(('.log','.env')):
             failures.append((name,'private output tracked'));continue
         path=ROOT/name
         if not path.exists():continue
-        content=path.read_text()
+        if path.suffix == '.png':
+            if name not in {'custom_components/mower_coordinator/brand/icon.png', 'custom_components/mower_coordinator/brand/icon@2x.png'}:
+                failures.append((name, 'unexpected binary asset'))
+            elif path.read_bytes()[:8] != b'\x89PNG\r\n\x1a\n':
+                failures.append((name, 'invalid PNG asset'))
+            continue
+        try:
+            content=path.read_text()
+        except UnicodeDecodeError:
+            failures.append((name, 'unexpected binary content'))
+            continue
         for label,pattern in PATTERNS.items():
-            if re.search(pattern,content):failures.append((name,label))
+            matches = re.findall(pattern, content)
+            if label == 'IPv4 address':
+                matches = [value for value in matches if value not in PUBLIC_TEST_ADDRESSES.get(name, set())]
+            if matches: failures.append((name,label))
     for name,label in failures: print(f'{name}: {label}')
     if failures:raise SystemExit(1)
-    print('Tracked-content privacy checks passed. Review history and prose separately before publishing.')
+    print('Tracked and nonignored candidate privacy checks passed. Review history and prose separately before publishing.')
 
 if __name__=='__main__':check()

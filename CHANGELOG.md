@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Mower Coordinator integration preview (0.2.0-alpha.1)
+
+- Add native setup and options wizards for arbitrary mowing areas, direction rotation, operating rules, optional weather, and notification routing.
+- Add persistent job ownership, guarded checkpoints, low-battery return, recharge continuation, readiness explanations, and deliberate commissioning controls.
+- Add testable notifications with quiet hours, event choices, urgent override, rate limits, and isolated delivery failures.
+- Add a network-isolated Home Assistant Container lab, fake mower, native-flow/runtime acceptance checks, HACS metadata, and reproducible component-only ZIP packaging.
+- Start disarmed after install, restart, and options changes. Automatic obstruction recovery and charger-free handoff remain disabled in this alpha; physical commissioning is still required.
+
+### YAML reference maintenance
+
 - Allow one guarded same-day reattachment after a newly established, stable charging session newer than the last owned-controller start. Existing cross-day limits and checkpoint identity checks remain.
 - Preserve the three-attempt return-recovery budget across brief movement; repeated channel failures no longer reset it within the active return episode.
 - Added 14 regression cases; 65 synthetic tests now pass.

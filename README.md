@@ -1,4 +1,21 @@
-# Mammotion mower automations for Home Assistant
+# Mower Coordinator for Home Assistant
+
+A configurable custom integration for coordinating Mammotion mowing areas, saved progress, charging, and notifications through Home Assistant.
+
+**New: `0.2.0-alpha.1` integration and native setup wizard.** Configure areas and direction sequences, battery limits, operating hours, optional weather, and notification destinations in the UI. It starts in observation mode and explains its readiness checks before you enable control.
+
+- [Integration setup and first-run guide](docs/INTEGRATION.md)
+- [Isolated simulator lab](lab/README.md)
+- [Validation and release status](docs/INTEGRATION_VALIDATION.md)
+
+This is a development alpha, not a certified universal mower controller. Real-model adapter compatibility and supervised physical commissioning are required. Automatic obstruction recovery and charger-free handoff are not enabled in this first integration alpha. The mature YAML reference remains available below; do not run both controllers together.
+
+The integration is developed on the `feat/mower-coordinator` branch until its pull request is merged. For that preview, download that branch and use the manual installation instructions. HACS installation applies once a version containing `custom_components/mower_coordinator` is available on the repository default branch or an integration release.
+
+---
+
+## Original YAML reference package
+
 
 An **alpha reference package** for coordinating a Mammotion mower through Home Assistant: scheduling areas, preserving unfinished work, returning to charge, and recovering from selected interruptions with bounded retries.
 

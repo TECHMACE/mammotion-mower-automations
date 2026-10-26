@@ -1,0 +1,37 @@
+name: mower-coordinator-lab
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:2026.10.4
+    container_name: mower-coordinator-lab
+    volumes:
+      - ./config:/config
+      - ./custom_components/mower_simulator:/config/custom_components/mower_simulator:ro
+      - ./custom_components/mammotion:/config/custom_components/mammotion:ro
+      - ../custom_components/mower_coordinator:/config/custom_components/mower_coordinator:ro
+    networks:
+      - isolated
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+  ui:
+    image: ghcr.io/home-assistant/home-assistant:2026.10.4
+    container_name: mower-coordinator-lab-ui
+    entrypoint: ["python3", "/proxy.py"]
+    ports:
+      - "127.0.0.1:18123:8123"
+    volumes:
+      - ./proxy.py:/proxy.py:ro
+    networks:
+      - ui
+      - isolated
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    restart: "no"
+networks:
+  isolated:
+    internal: true
+  ui:
+    driver: bridge

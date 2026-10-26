@@ -1,0 +1,33 @@
+start_mow:
+  name: Start simulated mowing
+  description: Captures a command in this isolated lab only.
+  target:
+    entity:
+      domain: lawn_mower
+  fields:
+    areas:
+      required: true
+      selector:
+        entity:
+          domain: switch
+          multiple: true
+    start_progress:
+      selector:
+        number:
+          min: 0
+          max: 99
+    toward:
+      selector:
+        number:
+          min: 0
+          max: 180
+cancel_job:
+  name: Cancel simulated job
+  target:
+    entity:
+      domain: lawn_mower
+get_geojson:
+  name: Capture simulated telemetry refresh
+  target:
+    entity:
+      domain: lawn_mower
