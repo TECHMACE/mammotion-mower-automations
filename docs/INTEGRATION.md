@@ -49,6 +49,8 @@ Create one or more logical areas from the mower's native area switches. Each nat
 - Assign a group if areas belong together. A group's due anchor can bring its other eligible members into the plan; completed work is not repeated just to fill the group.
 - Optionally set a stationary-return limit for that area. Zero disables this area-specific limit.
 
+For monthly interval overrides, enter `{"1": 14, "7": 3}` to cut every 14 days in January and every 3 days in July. Unlisted months use the normal interval.
+
 Area UUIDs preserve history when you rename an area. Changes to its native members, map or cutting profile invalidate the identity of saved work; the coordinator preserves and quarantines the checkpoint rather than guessing where to restart. An interrupted cut keeps its frozen profile and angle until completion.
 
 ## Calendar, recovery and charging
