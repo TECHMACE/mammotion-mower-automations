@@ -1,5 +1,6 @@
 """Native advanced-policy forms reject invalid values and reload disarmed."""
 from client import api
+from urllib.error import HTTPError
 from exercise_wizard import exercise
 from scenario_client import Lab
 
@@ -15,8 +16,12 @@ def run():
         url='/api/config/config_entries/options/flow/'+flow['flow_id']
         form=api(url,{'next_step_id':section},lab.token)
         data={item['name']:item['default'] for item in form['data_schema'] if 'default' in item}
-        rejected=api(url,{**data,**bad},lab.token)
-        assert rejected.get('errors'),rejected
+        try:
+            rejected=api(url,{**data,**bad},lab.token)
+        except HTTPError as error:
+            assert error.code==400,error
+        else:
+            assert rejected.get('errors'),rejected
         result=api(url,{**data,**good},lab.token)
         assert result['type']=='menu',result
         api(url,{'next_step_id':'review'},lab.token)

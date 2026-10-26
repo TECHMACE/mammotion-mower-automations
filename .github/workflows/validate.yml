@@ -32,8 +32,13 @@ jobs:
       # Preserve validation of the original generated YAML reference package.
       - run: python tools/check_ha_config.py
   isolated-runtime:
+    name: Native lab (${{ matrix.scenario }})
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario: [baseline, recovery, policy]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -61,16 +66,26 @@ jobs:
       - run: python lab/client.py
       - run: python tools/test_lab.py
       - run: python lab/exercise_wizard.py
-      - run: python lab/exercise_runtime.py --fresh
-      - run: python lab/exercise_recovery.py handoff
-      - run: python lab/exercise_recovery.py return
-      - run: python lab/exercise_contact.py
-      - run: python lab/exercise_gates.py
-      - run: python lab/exercise_forecast.py
-      - run: python lab/exercise_policy_options.py
-      - run: python lab/exercise_options.py
-      - run: python lab/exercise_runtime.py --fresh --map-change
-      - run: python lab/check_restart.py
+      - if: matrix.scenario == 'baseline'
+        run: python lab/exercise_runtime.py --fresh
+      - if: matrix.scenario == 'recovery'
+        run: python lab/exercise_recovery.py handoff
+      - if: matrix.scenario == 'recovery'
+        run: python lab/exercise_recovery.py return
+      - if: matrix.scenario == 'policy'
+        run: python lab/exercise_contact.py
+      - if: matrix.scenario == 'policy'
+        run: python lab/exercise_gates.py
+      - if: matrix.scenario == 'policy'
+        run: python lab/exercise_forecast.py
+      - if: matrix.scenario == 'policy'
+        run: python lab/exercise_policy_options.py
+      - if: matrix.scenario == 'baseline'
+        run: python lab/exercise_options.py
+      - if: matrix.scenario == 'baseline'
+        run: python lab/exercise_runtime.py --fresh --map-change
+      - if: matrix.scenario == 'baseline'
+        run: python lab/check_restart.py
       - run: python tools/test_lab.py
       - name: Isolated lab diagnostics
         if: failure()
