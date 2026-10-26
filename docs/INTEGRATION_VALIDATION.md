@@ -4,11 +4,12 @@
 
 ## Verified on October 26, 2026
 
-- **166 tests passed**, with no skips, in the official HA 2026.10.4 container with network disabled.
+- **167 tests passed**, with no skips, in the official HA 2026.10.4 container with network disabled.
 - Native seven-step wizard and invalid-input checks created two configurable areas.
 - Delayed acknowledgement produced exactly one start; checkpoint 55% survived reserve-battery return and resumed exactly once after 60 seconds of simulated charging.
 - Completion updated the commissioning evidence visible in HA.
 - A no-go geometry edit with unchanged area IDs quarantined saved work. Reload preserved the 55% checkpoint, disarmed control, and issued no new command.
+- Full HA process restart loaded successfully, retained saved progress, stayed disarmed, and issued no device command.
 - Options reload, modern and legacy notification targets, explicit tests during quiet hours, and delivery failure/recovery passed.
 - Network isolation probes confirmed no default route, an internal-only HA network, and blocked outbound connections.
 

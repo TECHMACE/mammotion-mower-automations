@@ -155,7 +155,7 @@ class MowerRuntime:
         """Read a synchronous in-process snapshot; retain only a digest."""
         registry=er.async_get(self.hass)
         mower=registry.async_get(self.config.get("mower_entity",""))
-        if getattr(mower,"platform",None)=="mower_simulator" and self.entity("mower_entity").attributes.get("map_revision"):return
+        if getattr(mower,"platform",None)=="mower_simulator" and self.entity("mower_entity") is not None and self.entity("mower_entity").attributes.get("map_revision"):return
         self._geometry_revision=None; self._geometry_checked_at=0
         sync=self.map_sync_state()
         if not self.fresh(sync) or sync.state!="synced":return
@@ -169,7 +169,7 @@ class MowerRuntime:
     def native_map_revision(self):
         registry=er.async_get(self.hass)
         mower=registry.async_get(self.config.get("mower_entity",""))
-        if getattr(mower,"platform",None)=="mower_simulator" and self.entity("mower_entity").attributes.get("map_revision"):
+        if getattr(mower,"platform",None)=="mower_simulator" and self.entity("mower_entity") is not None and self.entity("mower_entity").attributes.get("map_revision"):
             entity=self.entity("mower_entity")
             return entity.attributes.get("map_revision") if entity else None
         sync=self.map_sync_state()

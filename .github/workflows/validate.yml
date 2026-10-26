@@ -64,6 +64,7 @@ jobs:
       - run: python lab/exercise_runtime.py
       - run: python lab/exercise_options.py
       - run: python lab/exercise_runtime.py --fresh --map-change
+      - run: python lab/check_restart.py
       - name: Isolated lab diagnostics
         if: failure()
         run: docker compose -f lab/compose.yaml logs --tail 120

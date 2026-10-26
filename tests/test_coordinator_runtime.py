@@ -102,6 +102,15 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
         self.hass.states.put("sensor.activity","MODE_WORKING")
         self.hass.services.calls.clear()
 
+    async def test_startup_before_mower_entity_exists_stays_loaded_without_commands(self):
+        self.r.armed=False
+        self.hass.states.items.pop("lawn_mower.fake")
+        self.assertFalse(self.r.preflight()["telemetry_fresh"])
+        self.assertFalse(self.r.preflight()["map_revision_available"])
+        await self.r.async_evaluate()
+        self.assertEqual(self.hass.services.calls, [])
+        self.assertIn("Not ready", self.r.reason)
+
     async def test_static_presence_and_rain_do_not_make_device_telemetry_stale(self):
         self.hass.states.put("person.operator","home",age=86400)
         self.hass.states.put("binary_sensor.rain","off",age=86400)
