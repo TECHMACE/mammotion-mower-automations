@@ -14,7 +14,15 @@ python3 lab/exercise_wizard.py
 python3 lab/exercise_runtime.py --fresh
 python3 lab/exercise_runtime.py --fresh --map-change
 python3 lab/exercise_options.py
+python3 lab/exercise_recovery.py handoff
+python3 lab/exercise_recovery.py return
+python3 lab/exercise_gates.py
+python3 lab/exercise_forecast.py
+python3 lab/exercise_contact.py
+python3 lab/exercise_policy_options.py
 ```
+
+The advanced recovery and handoff scenarios enable configurable automatic recovery and charger-free handoff explicitly. Their observation/grace timers use valid minimum settings and run in real time; the return budget scenario deliberately reaches an intervention state. The contact scenario deliberately supplies a charging flag without battery gain and expects intervention.
 
 The runtime acceptance test replaces only its own fixture coordinator entry when `--fresh` is supplied; it refuses unknown or renamed entries. It exercises actual HA services against the fake mower and waits for real charging-stability timers. The options test leaves all-day quiet hours selected and the coordinator disarmed. The map-change scenario deliberately leaves its saved work quarantined for review.
 

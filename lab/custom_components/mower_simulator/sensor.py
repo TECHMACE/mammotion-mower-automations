@@ -1,11 +1,11 @@
 from homeassistant.components.sensor import SensorEntity
 from .entity import SimEntity
 async def async_setup_entry(hass,entry,async_add_entities):
-    async_add_entities([SimSensor(hass,key) for key in ["battery","progress","activity","error","blade_time","mileage","commands","notifications","map_sync_status"]])
+    async_add_entities([SimSensor(hass,key) for key in ["battery","progress","activity","error","blade_time","mileage","commands","notifications","map_sync_status","rtk","recent_fault_code","recent_fault_time"]])
 class SimSensor(SimEntity,SensorEntity):
     @property
     def translation_key(self):
-        return "map_sync_status" if self.key == "map_sync_status" else None
+        return {"map_sync_status":"map_sync_status","error":"self_check"}.get(self.key)
     @property
     def native_value(self):
         if self.key in ("commands","notifications"): return len(self.sim[self.key])

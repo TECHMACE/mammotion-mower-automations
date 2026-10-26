@@ -83,6 +83,7 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
             states.put(config[key],value)
         states.items["lawn_mower.fake"].attributes["map_revision"]="fake-map-v1"
         states.put("switch.area","off",attrs={"hash":11,"map_revision":"fake-map-v1"})
+        config["auto_recovery"]=False; config["allow_handoff"]=False
         config["zones"]=[{"id":"lawn","name":"Lawn","area_entities":["switch.area"],"angles":[0,90],"spacing_cm":11,"perimeter_laps":2,"interval_days":3,"minimum_battery":80}]
         self.hass=types.SimpleNamespace(states=states,services=Services(),registry=Registry(),config=types.SimpleNamespace(time_zone="UTC"))
         self.entry=Entry(config);self.r=runtime.MowerRuntime(self.hass,self.entry)
@@ -101,6 +102,133 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
         self.hass.states.put("binary_sensor.charging","off")
         self.hass.states.put("sensor.activity","MODE_WORKING")
         self.hass.services.calls.clear()
+
+    def install_motion(self):
+        for key,eid,value,attrs in (
+            ("tracker_entity","device_tracker.fake","not_home",{"latitude":40,"longitude":-100}),
+            ("mileage_entity","sensor.mileage","2",{"unit_of_measurement":"km"}),
+            ("rtk_entity","sensor.rtk","Fix",{})):
+            self.r.config[key]=eid; self.hass.states.put(eid,value,attrs=attrs)
+        self.r.config["auto_recovery"]=True
+
+    async def test_motion_evidence_uses_units_and_repeats_same_sample(self):
+        self.install_motion()
+        self.assertEqual(self.r.motion_evidence()[:1],(False,))
+        self.hass.states.items["sensor.mileage"].state="2.011"
+        self.assertTrue(self.r.motion_evidence()[0])
+        self.assertTrue(self.r.motion_evidence()[0],"Repeated same report must not consume motion proof")
+        self.hass.states.items["sensor.rtk"].state="Float"
+        self.assertFalse(self.r.motion_evidence()[2])
+        self.assertFalse(self.r.preflight()["recovery_bindings_ready"])
+
+    async def test_unknown_and_critical_current_faults_block_recovery(self):
+        await self.own_job(); self.install_motion()
+        self.hass.states.put("lawn_mower.fake","paused",attrs={"map_revision":"fake-map-v1"})
+        self.hass.states.put("sensor.activity","MODE_PAUSE")
+        self.r.config.update(recent_fault_code_entity="sensor.fault",recent_fault_time_entity="sensor.fault_time")
+        self.hass.states.put("sensor.fault_time",NOW.isoformat())
+        for code in ("9999","1004","2800"):
+            self.hass.states.put("sensor.fault",code)
+            obs=self.r.observation()
+            self.assertFalse(obs.safe);self.assertFalse(obs.recoverable)
+        self.hass.states.put("sensor.fault","1201")
+        self.assertTrue(self.r.observation().recoverable)
+        self.hass.states.put("sensor.fault","1004")
+        self.hass.states.items["sensor.fault_time"].state=(NOW-timedelta(hours=1)).isoformat()
+        self.assertTrue(self.r.observation().safe,"Old log entry must not act as a current fault")
+
+    async def test_cancel_return_withheld_when_movement_arrives_during_save(self):
+        await self.own_job();self.install_motion()
+        self.hass.states.put("lawn_mower.fake","returning",attrs={"map_revision":"fake-map-v1"})
+        self.hass.states.put("sensor.activity","MODE_RETURNING")
+        self.r.observation()
+        self.hass.services.calls.clear()
+        self.r.store.after_save=lambda:self.hass.states.put("sensor.mileage","0.1",attrs={"unit_of_measurement":"km"})
+        decision=types.SimpleNamespace(state=self.r.state,reason="retry",intents=[core.Intent("cancel_return",{})])
+        with patch.object(runtime,"tick",return_value=decision):
+            await self.r.async_evaluate()
+        self.assertFalse(any(service=="pause" for _,service,_ in self.hass.services.calls))
+        self.assertIn("recovery evidence changed",self.r.reason)
+
+    async def test_resume_rechecks_configured_battery_and_profile(self):
+        await self.own_job();self.install_motion()
+        self.hass.states.put("lawn_mower.fake","paused",attrs={"map_revision":"fake-map-v1"})
+        self.hass.states.put("sensor.activity","MODE_PAUSE")
+        intent=core.Intent("resume",{"job_token":self.r.state.job_token})
+        self.assertTrue(self.r.final_motion_gate(intent,self.r.observation()))
+        self.hass.states.put("sensor.battery","30")
+        self.assertFalse(self.r.final_motion_gate(intent,self.r.observation()))
+        self.hass.states.put("sensor.battery","100")
+        self.r.config["zones"][0]["spacing_cm"]=20
+        self.assertFalse(self.r.final_motion_gate(intent,self.r.observation()))
+
+    async def test_cancel_return_uses_pause_not_toggling_dock(self):
+        await self.r.dispatch(core.Intent("cancel_return",{}))
+        self.assertEqual(self.hass.services.calls[-1],("lawn_mower","pause",{"entity_id":"lawn_mower.fake"}))
+
+    async def test_dock_withheld_if_native_activity_is_already_returning(self):
+        await self.own_job()
+        self.hass.states.put("lawn_mower.fake","returning",attrs={"map_revision":"fake-map-v1"})
+        self.hass.states.put("sensor.activity","MODE_RETURNING")
+        self.hass.services.calls.clear()
+        decision=types.SimpleNamespace(state=self.r.state,reason="retry",intents=[core.Intent("dock",{})])
+        with patch.object(runtime,"tick",return_value=decision):
+            await self.r.async_evaluate()
+        self.assertFalse(any(service=="dock" for _,service,_ in self.hass.services.calls))
+        self.assertIn("native activity changed",self.r.reason)
+
+    async def test_native_resume_preserves_route_and_rechecks_hold(self):
+        await self.own_job();self.install_motion()
+        self.hass.states.put("lawn_mower.fake","paused",attrs={"map_revision":"fake-map-v1"})
+        self.hass.states.put("sensor.activity","MODE_PAUSE")
+        intent=core.Intent("resume",{"job_token":self.r.state.job_token})
+        self.assertTrue(self.r.final_motion_gate(intent,self.r.observation()))
+        self.r.hold=True
+        self.assertFalse(self.r.final_motion_gate(intent,self.r.observation()))
+        self.r.hold=False
+        await self.r.dispatch(intent)
+        self.assertEqual(self.hass.services.calls[-1],("lawn_mower","start_mowing",{"entity_id":"lawn_mower.fake"}))
+        self.assertEqual(self.r.state.checkpoint,40)
+
+    async def test_changed_configuration_invalidates_receipt_without_losing_checkpoint(self):
+        await self.own_job()
+        self.r.evidence.update(notification_received=True,setup_confirmed=True)
+        self.r._burn_rates={"zone":0.5}
+        await self.r.save()
+        self.r.config["notifications"]={"targets":["notify.new_destination"]}
+        await self.r.async_load()
+        self.assertFalse(self.r.evidence["notification_received"])
+        self.assertEqual(self.r._burn_rates,{})
+        self.assertFalse(self.r.evidence["setup_confirmed"])
+        self.assertEqual(self.r.state.checkpoint,40)
+
+    async def test_rain_drying_hold_and_light_rain_require_dry_owner_proof(self):
+        self.r.config["rain_dry_minutes"]=30
+        self.hass.states.put("binary_sensor.rain","on")
+        self.assertTrue(self.r.observation().rain)
+        self.hass.states.put("binary_sensor.rain","off")
+        self.assertTrue(self.r.observation().rain)
+        self.r.config["weather_entity"]="weather.fake"
+        self.r.config["light_rain_tolerance"]=True
+        self.hass.states.put("weather.fake","rainy",attrs={"temperature":20,"temperature_unit":"°C","wind_speed":1,"wind_speed_unit":"m/s"})
+        self.assertFalse(self.r.weather_safe())
+        self.r.state.job_token="owned-job";self.r._dry_launch_token="owned-job"
+        self.assertTrue(self.r.weather_safe())
+        self.hass.states.items["weather.fake"].state="lightning"
+        self.assertFalse(self.r.weather_safe())
+
+    async def test_adaptive_recharge_requires_measured_cutting_and_retains_rate(self):
+        await self.own_job()
+        obs=self.r.observation()
+        from dataclasses import replace
+        self.r.learn_recharge(replace(obs,working=True,progress=10,battery=90))
+        self.hass.states.items["sensor.blade"].state="40"
+        self.r.learn_recharge(replace(obs,working=True,progress=30,battery=80))
+        self.assertEqual(self.r._burn_rates["lawn"],.5)
+        self.r.state.checkpoint=80
+        self.assertEqual(self.r.settings().resume_battery,60)
+        await self.r.save();self.r._burn_rates={};await self.r.async_load()
+        self.assertEqual(self.r._burn_rates["lawn"],.5)
 
     async def test_startup_before_mower_entity_exists_stays_loaded_without_commands(self):
         self.r.armed=False

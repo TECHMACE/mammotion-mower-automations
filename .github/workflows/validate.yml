@@ -33,7 +33,7 @@ jobs:
       - run: python tools/check_ha_config.py
   isolated-runtime:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -61,10 +61,17 @@ jobs:
       - run: python lab/client.py
       - run: python tools/test_lab.py
       - run: python lab/exercise_wizard.py
-      - run: python lab/exercise_runtime.py
+      - run: python lab/exercise_runtime.py --fresh
+      - run: python lab/exercise_recovery.py handoff
+      - run: python lab/exercise_recovery.py return
+      - run: python lab/exercise_contact.py
+      - run: python lab/exercise_gates.py
+      - run: python lab/exercise_forecast.py
+      - run: python lab/exercise_policy_options.py
       - run: python lab/exercise_options.py
       - run: python lab/exercise_runtime.py --fresh --map-change
       - run: python lab/check_restart.py
+      - run: python tools/test_lab.py
       - name: Isolated lab diagnostics
         if: failure()
         run: docker compose -f lab/compose.yaml logs --tail 120

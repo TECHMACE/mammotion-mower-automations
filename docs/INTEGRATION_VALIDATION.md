@@ -1,19 +1,16 @@
 # Integration validation and release status
 
-`0.2.0-alpha.1` is a development preview on `feat/mower-coordinator`. It is separate from the original YAML reference release. It has not been deployed to the author's working Home Assistant system or tested on a physical mower.
+`0.2.0-alpha.2` is a development preview. It is separate from the original YAML reference release. It has not been deployed to the author's working Home Assistant system or tested on a physical mower.
 
-## Verified on October 26, 2026
+## Current alpha.2 evidence
 
-- **167 tests passed**, with no skips, in the official HA 2026.10.4 container with network disabled.
-- Native seven-step wizard and invalid-input checks created two configurable areas.
-- Delayed acknowledgement produced exactly one start; checkpoint 55% survived reserve-battery return and resumed exactly once after 60 seconds of simulated charging.
-- Completion updated the commissioning evidence visible in HA.
-- A no-go geometry edit with unchanged area IDs quarantined saved work. Reload preserved the 55% checkpoint, disarmed control, and issued no new command.
-- Full HA process restart loaded successfully, retained saved progress, stayed disarmed, and issued no device command.
-- Options reload, modern and legacy notification targets, explicit tests during quiet hours, and delivery failure/recovery passed.
-- Network isolation probes confirmed no default route, an internal-only HA network, and blocked outbound connections.
+- **225 tests passed without skips** in the official Home Assistant 2026.10.4 container with network disabled.
+- Configurable recovery, handoff, calendar/group/rest policies, charging/contact logic and weather policy are implemented. Implementation is not a blanket acceptance result.
+- The expanded native Home Assistant simulator batch is **pending final results**, including the guarded pause/settle/Dock recovery for native `RETURNING`.
+- Use the [lab behavior matrix](../lab/BEHAVIOR_MATRIX.md) for scenario-level results and remaining work. Do not carry an alpha.1 acceptance result forward as proof of a changed alpha.2 path.
+- No production Home Assistant deployment or physical mower commissioning is claimed for this integration release.
 
-All mower actions above were simulated. The lab was left with automatic control off and hold on.
+Earlier alpha.1 simulator runs exercised wizard setup, delayed acknowledgement, charging/resume, checkpoint persistence, map-change quarantine, restart disarming and notification behavior. Those are historical evidence, not a substitute for the current expanded run. Every mower action in that lab was simulated.
 
 ## Reproduce software checks
 
@@ -36,7 +33,7 @@ See [the lab guide](../lab/README.md) for the official Home Assistant Container 
 - Simulator acceptance tests capture commands separately from simulated state changes. They cannot establish physical coverage or reliable charging contacts.
 - Native frontend setup/options screens were inspected, including notification destinations, event selection, quiet hours, and urgent override.
 
-The public integration is not feature-equivalent to the mature installation-specific YAML reference. Automatic obstruction recovery and charger-free handoff remain disabled in this alpha. Restart and configuration reload disarm all integration commands; the user must rearm after review. Keep the mower's own protections enabled.
+The integration now exposes configurable recovery and charger-free handoff, both defaulting on as policies. The feature matrix tracks configurable coverage of the YAML reference and the evidence for each behavior; it does not establish identical physical behavior across installations. Restart and configuration reload disarm all integration commands; the user must rearm after review. Keep the mower's own protections enabled.
 
 Real-model compatibility must be confirmed against the adapter contract in the setup guide. A passing fake-mower scenario does not certify a vendor firmware or integration version. First physical commissioning belongs on the installer's own supervised system, not on the author's working system as part of this build.
 

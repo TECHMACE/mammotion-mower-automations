@@ -42,7 +42,7 @@ def main():
     token=login()
     states={s['entity_id']:s for s in api('/api/states',token=token)}
     assert states.get('switch.lab_coordinator_automatic_control',{}).get('state','off') == 'off', 'Disarm the lab coordinator before simulator smoke tests'
-    required=['lawn_mower.lab_mower','sensor.lab_battery','sensor.lab_progress','sensor.lab_activity','sensor.lab_error','binary_sensor.lab_charging','binary_sensor.lab_rain','switch.lab_area_1','person.lab_operator','device_tracker.lab_mower','notify.lab_notification_capture']
+    required=['lawn_mower.lab_mower','sensor.lab_battery','sensor.lab_progress','sensor.lab_activity','sensor.lab_error','binary_sensor.lab_charging','binary_sensor.lab_rain','switch.lab_area_1','person.lab_operator','device_tracker.lab_mower','notify.lab_notification_capture','sensor.lab_rtk','sensor.lab_mileage','sensor.lab_recent_fault_code','sensor.lab_recent_fault_time','weather.lab_weather']
     assert all(e in states for e in required),set(required)-set(states)
     def call(domain,service,data=None):return api(f'/api/services/{domain}/{service}',data or {},token)
     def state(entity):return api('/api/states/'+entity,token=token)
@@ -51,6 +51,10 @@ def main():
     assert state('lawn_mower.lab_mower')['state']=='mowing'
     call('mower_simulator','tick',{'progress':8})
     assert float(state('sensor.lab_progress')['state'])==40
+    call('lawn_mower','dock',{'entity_id':'lawn_mower.lab_mower'})
+    assert state('lawn_mower.lab_mower')['state']=='returning'
+    call('lawn_mower','dock',{'entity_id':'lawn_mower.lab_mower'})
+    assert state('lawn_mower.lab_mower')['state']=='paused', 'Native Dock toggles return off while returning'
     call('lawn_mower','dock',{'entity_id':'lawn_mower.lab_mower'})
     assert state('lawn_mower.lab_mower')['state']=='returning'
     call('mower_simulator','tick')

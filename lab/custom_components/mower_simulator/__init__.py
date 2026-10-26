@@ -22,12 +22,12 @@ from homeassistant.helpers import config_validation as cv, entity_registry as er
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 
 DOMAIN = "mower_simulator"
-PLATFORMS = ["lawn_mower", "sensor", "binary_sensor", "switch", "notify"]
+PLATFORMS = ["lawn_mower", "sensor", "binary_sensor", "switch", "notify", "weather"]
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 DEFAULT = dict(mower="docked", battery=100, progress=0, activity="MODE_READY", error=0,
                blade_time=0, mileage=0, charging=True, rain=False, safety_clear=True,
                operator_home=True, latitude=40.0, longitude=-100.0, delay_ack=False,
-               fail_dock=False, fail_notify=False, map_revision="lab-map-v1", map_sync_status="synced", no_go_revision=0)
+               fail_dock=False, fail_notify=False, map_revision="lab-map-v1", map_sync_status="synced", no_go_revision=0, weather="sunny", temperature=20, wind_speed=2, wind_gust=3, forecast_rain=False, rtk="Fix", recent_fault_code=0, recent_fault_time="2000-01-01T00:00:00+00:00")
 
 def publish(hass):
     sim = hass.data[DOMAIN]
@@ -45,9 +45,13 @@ async def command(hass, action, data):
     sim["commands"] = sim["commands"][-100:]
     state = sim["state"]
     if action in ("start_mow", "start_mowing") and not state["delay_ack"]:
-        state.update(mower="mowing", charging=False, activity="MODE_WORKING", progress=float(data.get("start_progress",0)), error=0)
-    elif action == "dock":
-        state.update(mower="returning", charging=False, activity="MODE_RETURNING")
+        state.update(mower="mowing", charging=False, activity="MODE_WORKING", progress=float(data.get("start_progress", state["progress"] if action == "start_mowing" else 0)), error=0)
+    elif action == "dock" and not state["charging"]:
+        # Upstream Dock is a toggle while returning: it cancels return.
+        if state["activity"] == "MODE_RETURNING":
+            state.update(mower="paused", activity="MODE_PAUSE")
+        else:
+            state.update(mower="returning", charging=False, activity="MODE_RETURNING")
     elif action in ("pause", "stop", "cancel_job"):
         state.update(mower="paused" if action == "pause" else "idle", activity="MODE_PAUSE" if action == "pause" else "MODE_READY", charging=False)
     publish(hass)

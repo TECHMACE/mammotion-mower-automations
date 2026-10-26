@@ -9,7 +9,7 @@ class SimEntity:
     def __init__(self,hass,key):
         self.hass = hass
         self.key = key
-        domain = ('lawn_mower' if key == 'mower' else 'switch' if key.startswith('area_') else 'notify' if key == 'notification_capture' else 'binary_sensor' if key in ('charging','rain','safety_clear','operator_home') else 'sensor')
+        domain = ('weather' if key == 'weather' else 'lawn_mower' if key == 'mower' else 'switch' if key.startswith('area_') else 'notify' if key == 'notification_capture' else 'binary_sensor' if key in ('charging','rain','safety_clear','operator_home') else 'sensor')
         self.entity_id = f"{domain}.lab_{key}"
         self._attr_unique_id = f"lab_{key}"
         self._attr_name = f"Lab {key.replace('_',' ')}"

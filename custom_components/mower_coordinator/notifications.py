@@ -384,6 +384,12 @@ class NotificationManager:
         task.add_done_callback(self._tasks.discard)
         return task
 
+    async def async_clear_attention(self) -> bool:
+        """Dismiss only this coordinator's notice after verified recovery."""
+        async with self._send_lock:
+            return await self._call('persistent', 'persistent_notification', 'dismiss',
+                                    {'notification_id': self._persistent_id}, None, self._safe_now_iso())
+
     def diagnostics(self) -> dict[str, Any]:
         """Sanitized state for HA diagnostics: no destination IDs, messages or exception text."""
         return {

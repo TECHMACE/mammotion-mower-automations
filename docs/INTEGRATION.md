@@ -1,226 +1,107 @@
-# Mammotion Mower Coordinator Custom Integration (`0.2.0-alpha.1`)
+# Set up Mammotion Mower Coordinator — 0.2.0-alpha.2
 
-> **Alpha Status — Lab-Validated Only (No Production Testing):**
-> `custom_components/mower_coordinator` is an alpha Home Assistant integration (`0.2.0-alpha.1`). It has been exercised only against unit tests and the isolated, network-free simulator in `lab/`. **Testing used a running isolated Home Assistant Container with a fake mower; no production Home Assistant or physical mower was accessed.** Software readiness checks and simulator runs do not establish physical mowing or docking safety. Keep the legacy YAML package instructions in [`docs/SETUP.md`](SETUP.md) and [`README.md`](../README.md) as the reference for the existing YAML workflow.
+Let the mower mow. First, tell it what a good day's work looks like.
 
-## Start here
+This Home Assistant integration coordinates an already-connected **Mammotion mower**. You choose the areas, directions, calendar, battery rules and notifications through native setup and options screens. The Mammotion integration still connects to the mower and supplies its telemetry.
 
-1. Install the preview component and restart your test Home Assistant.
-2. Open **Settings → Devices & Services → Add Integration → Mammotion Mower Coordinator**.
-3. Select your mower, connect its sensors, add your areas, and choose operating rules and notifications.
-4. Leave **Automatic control off**. Open the coordinator device page and press **Check readiness**.
-5. Send a test notification, check your phone or HA notification panel, and confirm receipt.
-6. Read **Explanation** and resolve each failed readiness check. Only then plan a supervised first run.
+This is a development alpha. The [validation notes](INTEGRATION_VALIDATION.md) and [lab behavior matrix](../lab/BEHAVIOR_MATRIX.md) separate implemented features from tested scenarios. Neither proves physical safety or coverage on your lawn.
 
-The wizard does not start a mower. The separate commissioning controls make the transition from setup to control explicit. Your existing Mammotion integration remains responsible for connecting to the mower.
+## Install
 
----
+Use Home Assistant 2026.10.4 or newer and a working Mammotion integration. Map and check your property in the Mammotion app first. Disable competing native schedules and older mower controllers before arming this one; do not run the YAML reference alongside it.
 
-## 1. What This Integration Does
+For a development preview, copy `custom_components/mower_coordinator` from the intended branch or reviewed component ZIP into your Home Assistant configuration's `custom_components` directory, then restart Home Assistant. Verify `custom_components/mower_coordinator/manifest.json` exists. A ZIP is a component distribution, not a Home Assistant backup.
 
-`mower_coordinator` replaces fixed-zone YAML helpers with a local Home Assistant integration that coordinates a single already-configured Mammotion mower entity (`lawn_mower.*`):
+Once the integration version you want is available through the repository's default branch or release, add [this repository](https://github.com/TECHMACE/mammotion-mower-automations) as a HACS custom repository of type **Integration**, download Mammotion Mower Coordinator and restart. Check the downloaded version; an older YAML-only release does not install the component.
 
-- **Guided UI Setup & Options Flow:** Configures sensor bindings, any number of user-defined mowing areas, per-area cutting profiles and direction angle sequences, operating hours, battery thresholds, and notification destinations without editing YAML or seeding helper entities.
-- **Observation-First Startup:** Setup reads Home Assistant state only and never moves the mower or sends notifications. New installations, configuration edits, and Home Assistant restarts always start **disarmed** (`Automatic control` off, `Hold new work` on).
-- **Durable Progress & Ownership:** Persists active zone ownership, progress checkpoints (`0–99%`), angle rotation indices, and completion dates in Home Assistant `.storage` (`mower_coordinator.<entry_id>`) before dispatching commands, and never adopts unowned mower jobs started outside the coordinator.
-- **Plain-Language Explanations:** Exposes human-readable `Status`, `Explanation`, `Readiness`, and `Commissioning` sensors so you can see why work is waiting or held before enabling control.
+Open **Settings → Devices & Services → Add Integration → Mammotion Mower Coordinator**. The wizard reads state; it does not send movement commands or notifications. Setup, restart and options reload leave **Automatic control off** and **Hold new work on**.
 
-### Alpha Scope Limitations
-- **Single Daytime Window:** Operating hours must start and end within the same local calendar day (`start_time < end_time`).
-- **No Automatic Obstruction Recovery:** `auto_recovery` is disabled (`False`) in this alpha. Paused or faulted jobs wait for operator inspection.
-- **No Charger-Free Area Handoff:** `allow_handoff` is disabled (`False`) by default; each new area starts from confirmed charging at the dock.
+## Choose the mower and sensors
 
----
+Select the mower, then check the suggested bindings. Similar names do not guarantee the right sensor.
 
-## 2. Beginner Installation
+| Binding | What it is for |
+| --- | --- |
+| Battery, progress, charging, activity | Required in the wizard; use distinct entities belonging to the selected mower's device. Percentages must be valid and reports fresh. |
+| Current Self check | Current health, normally `normal` when clear. Historical Last error sensors are not substitutes. |
+| Blade usage time | Required for control. Increasing usage correlated with progress establishes reported cutting evidence. A `MODE_WORKING` label alone does not. |
+| Native rain sensor | Required for control. Wet, unavailable or an active dry-out hold blocks mowing. |
+| Operator presence | Required for control; the operator must be home for starts/resumes. |
+| Property safety permission | A binary sensor or Toggle helper: `on` means the property is safe. Off/unavailable prevents movement commands, including Dock. |
+| Tracker, mileage, RTK | Required when automatic recovery is enabled. Reports must be fresh, mileage units recognized and RTK fixed. These help distinguish a stationary obstruction from delayed motion reports. |
+| Recent fault code and time | Optional paired fault evidence. Use the corresponding entities from the mower, not unrelated historical sensors. |
+| Weather | Optional external weather source. Advanced options can add multiple sources; configured sources must satisfy freshness and unit checks. |
 
-### Prerequisite
-Your mower must already be mapped in the Mammotion mobile app and integrated into Home Assistant through the `mammotion` integration so that its `lawn_mower.*` entity, telemetry sensors, and per-area `switch.*` entities exist in Home Assistant.
+If you need a manual property permission, create a Toggle helper under **Settings → Devices & Services → Helpers**. Leave it off until you inspect the lawn, gates, people, pets and obstacles. This permission does not detect obstructions or replace native mower protections.
 
-### Preview availability
+The adapter also requires a fresh, synced native **Map sync status** and a supported cached map structure. It fingerprints geometry, including paths and no-go features, without storing the raw map. An unchanged area ID is not enough when geometry changes. Missing or incompatible map data blocks control.
 
-Until this development branch is merged or released, use **manual installation from `feat/mower-coordinator`** or its validated ZIP artifact. The existing YAML release does not contain the new integration. The HACS steps below apply once an integration release is available.
+The adapter was developed against **Mammotion-HA 0.6.19-beta4 / PyMammotion 0.10.11**. Internal cache structures and service behavior can change between versions and models. A failed compatibility check needs investigation, not a bypass.
 
-### Option A: Install via HACS (Custom Repository)
-1. Open **HACS** in Home Assistant.
-2. Open the top-right menu (`⋮`) and select **Custom repositories**.
-3. Enter the repository URL `https://github.com/TECHMACE/mammotion-mower-automations` and select category **Integration** (`hacs.json` targets Home Assistant `2026.10.4` or newer).
-4. Locate **Mammotion Mower Coordinator** in HACS, click **Download**, and confirm the download.
-5. **Restart Home Assistant** so the custom component is loaded.
+## Give each area its own rules
 
-### Option B: Manual Copy
-1. Copy the `custom_components/mower_coordinator` directory from this repository into your Home Assistant configuration directory at `/config/custom_components/mower_coordinator`.
-2. Verify that `/config/custom_components/mower_coordinator/manifest.json` is present.
-3. **Restart Home Assistant**.
+Create one or more logical areas from the mower's native area switches. Each native switch must belong to this mower, expose a positive numeric hash, and appear in only one logical area.
 
-### Adding the Integration Entry
-1. Go to **Settings → Devices & Services**.
-2. Click **Add Integration** and search for **Mammotion Mower Coordinator**.
+- Name the area and choose its direction sequence: 1–12 whole-number angles from 0° to 180°. For example, `0,90` alternates directions after verified completion.
+- Set lane spacing, perimeter passes, path mode, mowing order and obstacle passes. Optional blade-height and speed overrides must suit your model.
+- Set the normal cut interval and minimum departure battery. Monthly interval overrides allow seasonal cadence without a fixed climate assumption.
+- Use an optional not-before date to leave an area alone until it is ready.
+- Assign a group if areas belong together. A group's due anchor can bring its other eligible members into the plan; completed work is not repeated just to fill the group.
+- Optionally set a stationary-return limit for that area. Zero disables this area-specific limit.
 
----
+Area UUIDs preserve history when you rename an area. Changes to its native members, map or cutting profile invalidate the identity of saved work; the coordinator preserves and quarantines the checkpoint rather than guessing where to restart. An interrupted cut keeps its frozen profile and angle until completion.
 
-## 3. Guided Setup Wizard Walkthrough
+## Calendar, recovery and charging
 
-The setup wizard (`config_flow.py`) inspects existing Home Assistant states only—it never calls mower movement services or sends messages during setup.
+The main rules screen sets a same-day operating window, battery reserve and fallback resume target. The default window is 09:00–19:00. Overnight windows are not supported.
 
-### Step 1: Welcome & Mower Selection (`user`)
-- **Name for this coordinator:** A friendly label (`1–80` characters, default `Mammotion mower coordinator`).
-- **Mower (`mower_entity`):** Select your `lawn_mower.*` entity.
-- If the selected `lawn_mower.*` entity is linked to a Home Assistant device, the wizard inspects that device's entities and pre-fills unambiguous sensor suggestions for Step 2.
+**Automatic recovery and charger-free handoff default on in alpha.2.** They are policy choices, not permission to move: control remains disarmed until commissioning. You can turn either off in options. Recovery requires its additional bindings and actions to pass readiness.
 
-### Step 2: Check the Mower Sensors (`bindings`)
-Review and select the telemetry and safety entities used by the coordinator:
+| Policy | What happens |
+| --- | --- |
+| Automatic recovery | Observe an eligible owned interruption, allow delayed telemetry, recheck safety and ownership, then use bounded resume/return recovery. Movement cancels a stationary candidate. A stalled native return uses pause, fresh settled telemetry, then Dock; a repeated Dock during RETURNING can otherwise cancel the native return. Unknown or critical faults need inspection. |
+| Recovery timing | Defaults: 120-second observation, 30-second grace, 120-second cooldown and acknowledgement timeout. The default retry limit is 2, configurable from 1 to 3. |
+| Direct area handoff | An eligible next area can start without a charger visit after completion, task cancellation/ready confirmation and fresh guards. The default handoff battery floor is 60%; a failed gate can require return instead. |
+| Return and contact | Dock request, arrival, charging flag and sustained charging are separate observations. Defaults require 60 seconds stable charging, 120 seconds contact confirmation and a 2-point battery rise, or full charge. |
+| Contact trouble | A suitable missing-contact episode may receive one bounded redock attempt. Insufficient battery gain or exhausted recovery produces attention rather than endless retries. |
+| Adaptive recharge | On by default. Use observed battery consumption and remaining work plus a buffer to estimate a resume target, within configured bounds. Without a usable estimate, use the fallback target. Default buffer 10 points; bounds 60–95%. |
+| External work protection | `protect_unowned_work` defaults off. When explicitly enabled and control is armed, unsafe weather/presence/window or low battery can trigger Dock for an externally started job. It never adopts, resumes or restarts that job's checkpoint. Inspection and a disarmed docked reset are required before coordinator planning continues. |
 
-| Binding Key | Domain | Required in Wizard? | Required Before Arming Control? | Purpose |
-| :--- | :--- | :--- | :--- | :--- |
-| `battery_entity` | `sensor` | **Yes** | **Yes** | Mower battery level (`0–100%`, same device). |
-| `progress_entity` | `sensor` | **Yes** | **Yes** | Current task progress (`0–100%`, same device). |
-| `charging_entity` | `binary_sensor` | **Yes** | **Yes** | Charger contact state (`on` when charging, same device). |
-| `activity_entity` | `sensor` | **Yes** | **Yes** | Raw activity mode (`MODE_WORKING`, `MODE_READY`, `MODE_RETURNING`, `MODE_PAUSE`, same device). |
-| `error_entity` | `sensor` | **Yes** | **Yes** | Current **Self check** health sensor (`normal` when healthy, same device). Historical Last error sensors are rejected. |
-| `blade_time_entity` | `sensor` | Optional | **Yes** | Blade usage time (same device); increasing values provide reported cutting evidence. |
-| `rain_entity` | `binary_sensor` | Optional | **Yes** | Rain sensor (`on` means wet; blocks starts and triggers protective dock return). |
-| `person_entity` | `person` | Optional | **Yes** | Operator presence (`home` required to start or continue mowing). |
-| `safety_entity` | `binary_sensor` or `input_boolean` | Optional | **Yes** | Property safety permission (`on` means safe; `off` immediately vetoes movement and recovery). |
-| `tracker_entity` | `device_tracker` | Optional | Optional | Mower GPS tracker entity (same device). |
-| `weather_entity` | `weather` | Optional | Optional (checked if set) | External weather entity; if selected, stale or adverse weather holds mowing. |
+Advanced calendar options select weekdays, active months, excluded dates, eligible groups and rest days between completed plans. These gates also apply when considering continuation; they are not just a morning alarm. Existing unfinished work remains accounted for.
 
-- All five required mower telemetry bindings must be distinct entities belonging to the selected mower's device.
-- You may omit `rain_entity`, `person_entity`, `safety_entity`, or `blade_time_entity` while completing initial setup for observation, but runtime preflight will block arming automatic control until all required runtime bindings are configured and valid. Device telemetry must be fresh; unchanged presence, rain, and safety permissions may remain valid without frequent state changes.
+## Rain, weather and forecasts
 
-The **Self check** sensor reports the current blocking condition. Do not select **Last error** or an `error_1_code` sensor: those are historical records and may remain populated after recovery.
+Keep Mammotion's native rain and safety protections enabled. The coordinator does not switch them off.
 
-The safety permission is a separate property-specific sensor or manual Toggle helper. For a supervised first setup, open **Settings → Devices & Services → Helpers → Create helper → Toggle**, name it **Lawn safety permission**, and leave it off. Select that helper as the safety permission in the wizard. Turn it on only after inspecting the lawn and confirming that people, pets, gates, and obstacles are safe for operation. Turn it off when that permission no longer applies. This is a manual permission, not obstruction detection or a substitute for the mower's safety system. An existing automated binary safety sensor can be selected instead. Off or unavailable blocks integration movement commands, including dock commands; inspect the device before restoring permission.
+External weather is optional; every configured source must be usable. Wind limits use meters per second in settings, with supported source-unit conversion. Temperature uses a configurable Celsius floor. Defaults are 10 m/s and 5°C. The dry-out delay defaults to 30 minutes after observed rain clears.
 
-The native **Map sync status** sensor must be enabled, fresh, and `synced`. The adapter reads the Mammotion integration's cached map in memory and fingerprints areas, paths, obstacles, no-go zones, virtual walls, corridors, and SVG geometry, retaining only the digest. It makes no map-fetch or telemetry-stream request. Missing, incomplete, unknown, or incompatible map structures block starts rather than silently trusting area IDs.
+Forecast protection is optional and defaults off. When enabled, configure weather sources that support hourly forecasts, a horizon and precipitation-probability threshold. Defaults are 6 hours and 50%. The provider must supply continuous hourly coverage across the selected horizon and valid rain probabilities. Missing, partial or stale forecast data holds work rather than being treated as a clear forecast.
 
-This alpha adapter was developed against **Mammotion-HA 0.6.19-beta4 / PyMammotion 0.10.11**. It validates the cache structure rather than assuming all versions or models are compatible. Older or newer versions with different cache schemas may remain observation-only until the adapter is updated. A failed map readiness check is not permission to bypass it.
+Light-rain tolerance is optional and defaults off. It applies to external weather reports only after a dry launch has been established for the owned job. It does not waive native rain, severe-weather, physical-safety or other movement gates.
 
-### Step 3: Configure Mowing Areas & Direction Profiles (`zone` & `more_areas`)
-Unlike the legacy 5-zone YAML package, you can configure **any number of logical mowing areas** (`1` or more):
+## Notifications and the device page
 
-- **Area name (`name`):** Friendly name for the logical zone (`1–80` characters, e.g., `Front Lawn`).
-- **Native mower areas (`area_entities`):** Select one or more `switch.*` entities belonging to your mower. Every selected switch must belong to the mower's device, expose a positive integer `hash` state attribute, and must not overlap with any other configured logical area.
-- **Direction angles (`angles`):** Enter `1` to `12` comma-separated whole-number angles between `0` and `180` degrees (for example `0,90` or `0,45,90,135`).
-  - The coordinator uses the current angle index for the area and advances to the next angle in the sequence **only after verified 100% completion**.
-  - If a job is interrupted (for example, low-battery recharge or rain return) and later resumed, it keeps its frozen cutting profile and original angle until that cut completes.
-- **Lane spacing (`spacing_cm`):** Integer from `8` to `35` cm (default `11`).
-- **Perimeter passes (`perimeter_laps`):** Integer from `0` to `4` laps (default `2`).
-- **Days between completed cuts (`interval_days`):** Integer from `1` to `60` days (default `3`).
-- **Minimum departure battery (`minimum_battery`):** Integer from `30` to `100%` (default `80%`, must exceed the return battery reserve).
-- **Optional overrides:**
-  - `blade_height`: Explicit cutting height override (`20–100` mm).
-  - `speed`: Explicit cutting speed override (`0.2–0.8` m/s in the setup wizard; the adapter accepts `0.2–0.8` m/s).
-- In the **Add another area? (`more_areas`)** step, check **Add another mowing area** to define additional zones, or leave it unchecked to proceed.
+Choose supported notification entities and/or legacy notify actions, event types, quiet hours and whether urgent alerts may override quiet hours. A persistent Home Assistant notification is the fallback when no push destination is selected.
 
-#### Editing Areas Later (`Configure` Options Flow)
-- Each area is assigned an immutable internal UUID (`id`). Renaming an area in **Configure → Add, edit, or remove areas** preserves its completion history and angle rotation state.
-- If you change an area's native switches (`area_entities`), map revision, or cutting profile while saved work is in progress for that area, the coordinator moves the job to the **`quarantined`** phase (`route_changed`) rather than silently resuming with mismatched route geometry.
+The device page shows **Status**, **Explanation**, **Readiness**, **Saved progress**, **Remaining areas**, **Recovery attempts**, **Commissioning** and **Notification delivery**. Readiness reports individual checks; it is a software check, not a certificate that the lawn is clear.
 
-### Step 4: Choose Operating Rules (`rules`)
-- **Earliest / Latest mowing time (`start_time`, `end_time`):** Local daytime window in Home Assistant's configured timezone (default `09:00:00` to `19:00:00`). When the window ends during an owned mow, the coordinator issues a protective `lawn_mower.dock` command and saves the progress checkpoint.
-- **Return battery reserve (`reserve_battery`):** `15–50%` (default `25%`). Reaching or dropping below this level triggers a protective return to the charger.
-- **Battery required to resume (`resume_battery`):** `50–100%` (default `85%`, must be strictly greater than `reserve_battery`).
-- **Weather freshness & wind limit (`weather_max_age`, `wind_limit_mps`):** Used when an optional `weather_entity` is selected. Weather conditions (`rainy`, `pouring`, `lightning`, `snowy`, `hail`, etc.), temperatures `<= 0°C` (converted from `°F` or `°C`), or wind/gust speeds exceeding `wind_limit_mps` (converted from `m/s`, `km/h`, `mph`, or `kn`) hold starts and trigger protective dock returns.
+1. Leave control off and press **Check readiness**. Resolve failed checks.
+2. Press **Send test notification**. Explicit tests bypass quiet hours/event filters.
+3. After seeing the message arrive, press **Confirm test notification received**. A successful service call alone does not prove phone delivery.
+4. Confirm setup and competing schedules are off. Only then plan a supervised run.
 
-### Step 5: Choose Notifications (`notifications`)
-- **Notification entities (`targets`):** Zero or more `notify.*` entities called via `notify.send_message`.
-- **Other notification actions (`legacy_actions`):** Zero or more legacy `notify.<service>` actions (such as `notify.mobile_app_*`), up to `10` total destinations combined.
-- **Events to receive (`events`):** Choose which coordinator events send push notifications.
-  - Note: Needs-attention (`attention`) alerts **always** create a persistent notification in the Home Assistant UI (`persistent_notification.create`), even if push destinations are empty or quiet hours are active.
-- **Quiet hours (`quiet_start`, `quiet_end`) & `urgent_override`:** Suppresses routine push notifications during the local quiet window (default `22:00:00` to `08:00:00`; set equal times to disable).
-- **Failure Isolation:** Each destination has a 10-second timeout, 15-minute duplicate suppression, and a 20-message/hour routine rate limit. Notification failures never block or delay mower safety commands.
+**Automatic control off blocks every integration command, including protective Dock.** **Hold new work** is different: while control remains armed it blocks new/resumed mowing, while an owned job can still receive a protective return. Physical safety permission can veto even Dock. These controls are not a physical emergency stop.
 
-### Step 6: Review and Start Observing (`review`)
-- Displays your configured areas, operating window, weather protection status, and any bindings still needed before control.
-- Check **I understand that setup starts observation only and physical operation is not yet verified** to save the entry in **Observation mode**.
+Restart and configuration edits disarm control. Saved ownership, checkpoints and pending intents persist, but the integration does not blindly replay a command. Inspect the current mower state and readiness before deliberately rearming. Keep native mower protections working independently of Home Assistant.
 
----
+## First ordinary mowing run
 
-## 4. Entities, Readiness Checks, and Plain-Language Hold Reasons
+Start with a small area you can watch. Verify the map and model's supported cutting values, turn on property safety permission only when the lawn is clear, confirm setup, release Hold new work and arm Automatic control. Watch launch, cutting evidence, completion, return and sustained charging separately.
 
-Once configured, the integration creates the following entities under your coordinator device:
+Do not create a trap or dirty a camera to test recovery. Observe natural interruptions, record manual commands and compare timestamps. Use **Reset recovery after inspection** only after resolving the cause, disarming and docking. A simulator result does not prove traction, obstacle detection or charging-contact quality.
 
-### Sensors
-- **`Status` (`sensor.*_status`):** Shows `observe` while disarmed, or the active coordinator phase (`idle`, `starting`, `mowing`, `returning`, `charging`, `paused`, `attention`, `quarantined`, `final_return`, `complete`, `reconciling`) when armed.
-- **`Explanation` (`sensor.*_explanation`):** Plain-English explanation of current state or why mowing is waiting, with attributes `updated_at`, `mode` (`observe` or `control`), and `next_step`. Examples of built-in hold and wait explanations include:
-  - `"Observation only. Waiting for the allowed mowing window."`
-  - `"Not ready: telemetry fresh, no legacy controller enabled."`
-  - `"Manual hold is on."`
-  - `"Waiting for the operator to be home."`
-  - `"Waiting for dry conditions."` / `"Rain protection is unavailable."`
-  - `"Weather protection is unavailable or conditions are unsuitable."`
-  - `"Charging to 85% before continuing <Area> from 55%."`
-  - `"Another job is active; this coordinator will not take ownership."`
-- **`Readiness` (`sensor.*_readiness`):** Reports `ready` or `needs attention`. Its `checks` attribute exposes fourteen read-only preflight gates:
-  1. `supported_adapter`: The `lawn_mower` entity belongs to the `mammotion` (or lab `mower_simulator`) platform.
-  2. `saved_state_readable`: Persistent `.storage` state loaded without corruption.
-  3. `telemetry_fresh`: All 7 device telemetry entities (`mower`, `battery`, `progress`, `charging`, `activity`, `error`, `blade_time`) reported a valid state within the last `120` seconds.
-  4. `battery_and_progress_valid`: Battery and progress sensors report finite numbers in `0–100`.
-  5. `start_action_available`: Service `mammotion.start_mow` is registered.
-  6. `dock_action_available`: Service `lawn_mower.dock` is registered.
-  7. `areas_match_mower`: All configured area `switch.*` entities exist, belong to the mower's device, and expose distinct positive integer `hash` attributes.
-  8. `map_revision_available`: The mower entity or all configured area `switch.*` entities expose a non-empty `map_revision` attribute.
-  9. `settings_valid`: Zone profiles, battery reserves, and operating window pass `core.Settings` validation.
-  10. `no_legacy_controller_enabled`: Legacy YAML package master switch (`input_boolean.mower_package_enabled`) and all `automation.mower_*` entities are turned off.
-  11. `weather_ready`: Optional `weather_entity` is either unconfigured or reporting fresh, unit-valid temperature and wind data.
-  12. `rain_available`: `rain_entity` is configured and reporting `on` or `off`.
-  13. `presence_available`: `person_entity` is configured and reporting a valid state.
-  14. `physical_safety_ready`: `safety_entity` is configured and currently `on`.
-- **`Saved progress` (`sensor.*_saved_progress`):** Monotonic checkpoint percentage (`%`) for the active area.
-- **`Commissioning` (`sensor.*_commissioning`):** Reports `setup confirmed` or `setup incomplete`, with `steps` (`setup_confirmed`, `notification_test_requested`, `notification_received`, `launch_observed`, `completion_observed`, `charging_observed`) and `physical_validation: "not established by software"`.
-- **`Remaining areas` (`sensor.*_remaining_areas`):** Number of due areas remaining in the queue.
-- **`Recovery attempts` (`sensor.*_recovery_attempts`):** Number of recovery attempts used (`retries`).
-- **`Notification delivery` (`sensor.*_notification_delivery`):** Current notification subsystem status.
+For updates, back up Home Assistant, inspect release notes and repeat readiness and notification checks. For rollback, safely stop/park the mower, disarm this integration and restore the prior version or backup. Enable another controller only after checking ownership and unfinished work.
 
-### Buttons & Notification Testing
-1. **`Check readiness` (`button.*_check_readiness`):** Runs an immediate read-only evaluation of all preflight checks and updates the `Readiness` and `Explanation` sensors.
-2. **`Send test notification` (`button.*_send_test_notification`):** Sends a clearly labeled test message (`Title: "Mammotion mower coordinator: TEST notification"`, prefixed with `"TEST ONLY - not a mower event."`) to your configured destinations (or a persistent notification if no push targets are configured), bypassing quiet hours and event filters, and records `notification_test_requested: true`.
-3. **`Confirm test notification received` (`button.*_confirm_test_notification_received`):** Press this only after you physically see the test notification arrive on your phone or display. A successful Home Assistant service call only proves Home Assistant accepted the request—it does not prove downstream delivery to your device.
-4. **`Confirm setup and competing schedules off` (`button.*_confirm_setup_and_competing_schedules_off`):** Requires all `Readiness` preflight checks to pass (`all(preflight().values())`), and confirmed notification receipt when destinations are configured, then records `setup_confirmed: true`.
-5. **`Reset recovery after inspection` (`button.*_reset_recovery_after_inspection`):** Resets exhausted retry counters after you physically inspect the mower, disarm `Automatic control`, and confirm the mower is `docked`.
+## Share improvements, keep private data private
 
-### Switches & Arming Interlocks
-
-**Disarming Automatic control stops every command from this integration, including protective dock commands.** “Hold new work” is different: while control remains armed, it blocks starts but still allows an owned job to return. Restarting or editing configuration disarms the integration; inspect the mower and rearm deliberately. The mower's own protections remain essential.
-
-- **`Hold new work` (`switch.*_hold_new_work`):** Defaults to **on** (`True`). While on, no new or resumed mow starts will be dispatched, though an already-owned active mow can still be commanded to return to the dock for safety/battery/weather/window holds.
-- **`Automatic control` (`switch.*_automatic_control`):** Defaults to **off** (`False`). Turning it on is blocked with an error unless:
-  1. `Confirm setup and competing schedules off` has been pressed (`setup_confirmed: true`),
-  2. Every check in `Readiness` is `true`, and
-  3. The mower is currently `docked` (unless resuming an already-owned `active_zone`).
-
----
-
-## 5. Restart Disarming and Options Reload Behavior
-
-To prevent unexpected physical movement after power outages, upgrades, or configuration edits:
-
-1. **Always Disarmed on Startup:** `Automatic control` (`armed`) is initialized to `False` and `Hold new work` (`hold`) is initialized to `True` whenever Home Assistant starts or the integration reloads. Switch states are intentionally never restored armed from Home Assistant state history.
-2. **Editing Options Disarms Control:** Saving changes in the integration's **Configure** flow triggers an entry reload (`async_options_updated`), returning the coordinator to disarmed Observation mode (`armed = False`, `hold = True`).
-3. **Crash & Restart Reconciliation (`reconciling`):** Job ownership, progress checkpoints, and pending command flags are saved to `.storage` before any service call is made. If Home Assistant restarts while a job or command was active, `reconcile_restart()` places the state into `reconciling`. It **never** blindly replays a previous `mammotion.start_mow` or `lawn_mower.dock` command after a restart; instead, it waits for fresh telemetry to confirm whether the mower is actively cutting or docked and charging.
-
----
-
-## 6. Commissioning Distinction: Lab vs. Real Mower Capabilities
-
-### What the Isolated Lab (`lab/`) Can Test
-The repository includes an air-gapped Docker Compose environment (`lab/compose.yaml` with `internal: true` networking) and a synthetic `mower_simulator` component (`lab/custom_components/mower_simulator`). In the lab:
-- `mower_simulator` creates fake entities (`lawn_mower.lab_mower`, synthetic battery/progress/activity/error/blade_time sensors, 3 area switches with hashes `10001–10003`, `person.lab_operator`, and `notify.lab_capture`) and registers a mock `mammotion.start_mow` service.
-- Calling `mower_simulator.tick` synthetically increments `progress` and `blade_time`, drains/charges `battery`, and transitions states in memory.
-- This validates the coordinator's state machine transitions, config flow schemas, `.storage` persistence, and notification filtering **in software only**.
-
-### What Software Checks and the Lab Cannot Validate
-Neither unit tests, the `lab/` simulator, nor the `Readiness` preflight sensor can verify physical reality on your property:
-- **Physical Map & Perimeter Safety:** Whether native Mammotion area switches correspond to obstacle-free lawn boundaries, safe slopes, and clear channels.
-- **Adapter & Firmware Behavior:** How your specific Mammotion model, firmware version, and `mammotion` integration version handle `mammotion.start_mow` parameters (`toward`, `channel_width`, `mowing_laps`, `blade_height`, `speed`, `start_progress`) over real Bluetooth, local, or cloud transport.
-- **Physical Cutting Proof:** On a real mower, the runtime requires `lawn_mower` state `"mowing"`, `activity_entity` state `"MODE_WORKING"`, and an observed increase in `blade_time_entity` after dispatch, correlated with a subsequent progress report, before treating a start as confirmed cutting. If your mower does not update `blade_time_entity` frequently during a cut, starts will time out into `start_unconfirmed`.
-- **Physical Docking & Charging Contact:** Whether your `reserve_battery` percentage leaves enough margin for the mower to travel back to the charger and establish sustained charging contact (`charging_stable_seconds = 60s`).
-
-### Supervised First-Run Commissioning Checklist
-Before relying on `mower_coordinator` on a real mower:
-1. Disable all schedules in the Mammotion mobile app and verify any legacy YAML mower automations (`input_boolean.mower_package_enabled`, `automation.mower_*`) are turned off.
-2. Complete the setup wizard with a single small, easily observed mowing area first, and verify `Readiness` reports `ready`.
-3. Press **Send test notification**, verify the test message arrives on your device, and press **Confirm test notification received**.
-4. Observe the `Explanation` sensor while in `observe` mode to confirm the coordinator's planned behavior matches expectations.
-5. With the mower physically docked, clear the lawn of people, pets, and obstacles, press **Confirm setup and competing schedules off**, turn off **Hold new work**, and turn on **Automatic control** while physically supervising the mower through launch, cutting, and return-to-dock charging.
+Fork it, change it and help the next person. The [MIT license](../LICENSE) permits modification and redistribution; keep the license and copyright notice. Reports should include versions, expected behavior and a small synthetic reproduction. Do not publish raw maps, coordinates, storage, accounts, device identifiers or unreviewed traces.

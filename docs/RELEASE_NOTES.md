@@ -1,20 +1,21 @@
-# Mammotion Mower Coordinator for Home Assistant
-## 0.2.0-alpha.1 preview
+# Mammotion Mower Coordinator — 0.2.0-alpha.2
 
 Let the mower mow. You have other things to do.
 
-This is for **Mammotion mowers**, with Home Assistant helping keep the mowing plan together. Set up your areas, cutting directions, operating hours, battery limits, optional weather checks, and notifications through a setup wizard. Your lawn, your settings.
+This alpha brings the recovery and scheduling work into configurable Home Assistant screens. Pick your Mammotion mower, add your areas and cutting directions, choose when it can work, and tell it where to send a message. Your lawn, your settings.
 
-The idea is simple: keep track of the work, preserve unfinished progress, and explain what is happening. If it is waiting on charging, rain, an operating window, or a safety check, you should be able to see why.
+Automatic recovery and going straight to the next eligible area now default on as configurable policies. That does not start the mower: setup, restart and configuration changes still leave control disarmed. Readiness and notification checks come first.
 
-Setup starts with control off. Walk through the checks, send yourself a test notification, and confirm it arrived before enabling control. No surprise test drive across the yard.
+There is more room to fit the plan to your lawn: weekday and seasonal calendars, excluded dates, area groups, rest days, not-before dates, seasonal intervals and area-specific stationary limits. Adaptive recharge estimates what unfinished work needs. Optional forecasts and light-rain tolerance add choices while native rain and safety protections remain intact.
 
-We built a separate Home Assistant lab with a fake mower to test launches, delayed updates, charging, saved progress, map changes, and notification failures. The working house system was not used as a test bench. [The validation notes](INTEGRATION_VALIDATION.md) explain exactly what passed.
+Recovery waits for fresh motion evidence, respects its attempt budget and keeps the checkpoint. A stalled native return uses a guarded pause/settle/Dock sequence because sending Dock while Mammotion is already returning can cancel that return. Charging needs time and battery gain; an arrival message is not enough.
 
-**This is still an alpha.** The new integration needs supervised testing on real installations. Automatic obstruction recovery and moving straight into the next area without docking are not enabled in this version. The original YAML reference has more history; this new package still has to earn that confidence. A test passing does not mean the mower physically cut every strip or made good contact with its charger.
+Optional external-work protection defaults off. If you enable it, the coordinator can make a protective return for a job you started elsewhere. It does not adopt or restart that job. Inspect it before clearing the hold.
 
-### Make it yours
+**Still an alpha.** The current code passed 225 tests without skips in the official Home Assistant 2026.10.4 container with network disabled. Final expanded native simulator scenarios are pending; see the [behavior matrix](../lab/BEHAVIOR_MATRIX.md) and [validation notes](INTEGRATION_VALIDATION.md). No physical mower commissioning is claimed. A fake mower cannot prove real traction, coverage or clean charging contacts.
 
-Fork it, branch it, change it, and build something useful. Want different rules or a new feature? Have at it. The [MIT license](../LICENSE) lets you use, modify, share, and sell your version; keep its license and copyright notice. Sending improvements back is welcome, but it is not a requirement. Spread the love.
+## Make it yours
 
-This is an independent community project, not an official Mammotion product. Start with the [setup guide](INTEGRATION.md). Preview installation currently uses the development branch or its ZIP; HACS installation follows an integration release or merge to the default branch.
+Fork it, branch it, improve it and spread the love. The [MIT license](../LICENSE) permits using, modifying and redistributing your version, including commercially; keep its license and copyright notice. Pull requests are welcome, not a condition of using your own changes.
+
+This is an independent community project, not an official Mammotion product. Start with the [setup guide](INTEGRATION.md). Use the intended branch or component ZIP for a preview; HACS availability depends on the version published to the repository.

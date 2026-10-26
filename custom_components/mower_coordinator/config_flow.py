@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from datetime import time
+from datetime import date, time
 import math
 from typing import Any
 from uuid import uuid4
@@ -23,8 +23,23 @@ BINDINGS = {
     "person_entity": "person", "weather_entity": "weather",
     "tracker_entity": "device_tracker", "blade_time_entity": "sensor",
     "safety_entity": "binary_sensor",
+    "mileage_entity": "sensor", "rtk_entity": "sensor",
+    "recent_fault_code_entity": "sensor", "recent_fault_time_entity": "sensor",
 }
 REQUIRED_BINDINGS = {"battery_entity", "progress_entity", "charging_entity", "activity_entity", "error_entity"}
+RECOVERY_NUMBERS = {
+    "contact_confirmation_seconds": (120, 60, 600),
+    "contact_battery_gain": (2, 1, 5),
+    "charging_stable_seconds": (60, 30, 600),
+    "return_timeout": (1200, 120, 7200),
+    "freshness_seconds": (120, 30, 300),
+    "max_retries": (2, 1, 3),
+    "recovery_cooldown": (120, 30, 1800),
+    "ack_timeout": (120, 30, 600),
+    "handoff_minimum_battery": (60, 30, 100),
+    "recovery_observation_seconds": (120, 30, 600),
+    "recovery_grace_seconds": (30, 15, 120),
+}
 EVENTS = ["attention", "complete", "charging", "resumed", "started", "hold"]
 
 
@@ -80,6 +95,22 @@ def validate_zone(data: dict, other_zones: list[dict], zone_id: str | None = Non
     for key, lo, hi in (("blade_height", 20, 100), ("speed", 0.2, 0.8)):
         if key in data and data[key] not in (None, ""):
             result[key] = _finite_number(data[key], lo, hi, key == "blade_height")
+    for key, default, high in (("cutting_path_mode", 0, 3), ("mow_order", 1, 1), ("obstacle_laps", 1, 4)):
+        result[key] = _finite_number(data.get(key, default), 0, high, True)
+    result["not_before"] = date.fromisoformat(data["not_before"]).isoformat() if data.get("not_before") else None
+    group = data.get("group", "")
+    if not isinstance(group, str) or len(group) > 80:
+        raise ValueError("invalid_zone")
+    result["group"] = group.strip()
+    anchor = data.get("group_anchor", False)
+    if type(anchor) is not bool or (anchor and not result["group"]):
+        raise ValueError("invalid_zone")
+    result["group_anchor"] = anchor
+    result["stationary_return_seconds"] = _finite_number(data.get("stationary_return_seconds", 0), 0, 7200, True)
+    seasonal = data.get("seasonal_intervals", {})
+    if not isinstance(seasonal, dict) or any(str(m) not in {str(n) for n in range(1, 13)} for m in seasonal):
+        raise ValueError("invalid_zone")
+    result["seasonal_intervals"] = {str(m): _finite_number(days, 1, 365, True) for m, days in seasonal.items()}
     return result
 
 
@@ -119,6 +150,8 @@ class WizardSteps:
             elif key not in {"person_entity", "weather_entity", "rain_entity", "safety_entity"} and not self._same_device(entity_id):
                 errors[key] = "wrong_device"
         selected = [data[k] for k in REQUIRED_BINDINGS if data.get(k)]
+        if bool(data.get("recent_fault_code_entity")) != bool(data.get("recent_fault_time_entity")):
+            errors["base"] = "fault_pair_required"
         if len(selected) != len(set(selected)):
             errors["base"] = "duplicate_binding"
         return errors
@@ -148,6 +181,13 @@ class WizardSteps:
         for key, lo, hi, step in (("blade_height", 20, 100, 1), ("speed", .2, .8, .1)):
             opts = {"default": current[key]} if key in current else {}
             fields[vol.Optional(key, **opts)] = _number(lo, hi, step)
+        for key, default, high in (("cutting_path_mode", 0, 3), ("mow_order", 1, 1), ("obstacle_laps", 1, 4)):
+            fields[vol.Required(key, default=current.get(key, default))] = _number(0, high)
+        fields[vol.Optional("not_before", **({"default": current["not_before"]} if current.get("not_before") else {}))] = selector.DateSelector()
+        fields[vol.Optional("group", default=current.get("group", ""))] = selector.TextSelector()
+        fields[vol.Required("group_anchor", default=current.get("group_anchor", False))] = selector.BooleanSelector()
+        fields[vol.Optional("stationary_return_seconds", default=current.get("stationary_return_seconds", 0))] = _number(0, 7200)
+        fields[vol.Optional("seasonal_intervals", default=current.get("seasonal_intervals", {}))] = selector.ObjectSelector()
         return vol.Schema(fields)
 
     async def async_step_zone(self, user_input=None):
@@ -198,8 +238,17 @@ class WizardSteps:
                 update = {"start_time": start.isoformat(), "end_time": end.isoformat(), "reserve_battery": reserve, "resume_battery": resume,
                           "weather_max_age": _finite_number(user_input.get("weather_max_age", 1800), 60, 7200, True),
                           "wind_limit_mps": _finite_number(user_input.get("wind_limit_mps", 10), 1, 20)}
+                for key, (fallback, minimum, maximum) in RECOVERY_NUMBERS.items():
+                    update[key] = _finite_number(user_input.get(key, self._settings.get(key, fallback)), minimum, maximum, True)
+                if update["handoff_minimum_battery"] <= reserve:
+                    raise ValueError("invalid_battery")
+                for key in ("auto_recovery", "allow_handoff", "protect_unowned_work"):
+                    value = user_input.get(key, self._settings.get(key, key != "protect_unowned_work"))
+                    if type(value) is not bool:
+                        raise ValueError("invalid_number")
+                    update[key] = value
                 self._settings.update(update)
-                return await self._after_step("notifications")
+                return await self._after_step("advanced")
             except (ValueError, TypeError, KeyError) as exc:
                 errors["base"] = str(exc) if str(exc) in {"invalid_window", "invalid_battery", "invalid_number"} else "invalid_window"
         defaults = {"start_time": "09:00:00", "end_time": "19:00:00", "reserve_battery": 25, "resume_battery": 85, "weather_max_age": 1800, "wind_limit_mps": 10}
@@ -208,7 +257,79 @@ class WizardSteps:
             value = self._settings.get(key, fallback)
             kind = selector.TimeSelector() if key.endswith("time") else {"reserve_battery": _number(15, 50), "resume_battery": _number(50, 100), "weather_max_age": _number(60, 7200), "wind_limit_mps": _number(1, 20, .1)}[key]
             fields[vol.Required(key, default=value)] = kind
+        for key, (fallback, minimum, maximum) in RECOVERY_NUMBERS.items():
+            fields[vol.Required(key, default=self._settings.get(key, fallback))] = _number(minimum, maximum)
+        for key in ("auto_recovery", "allow_handoff", "protect_unowned_work"):
+            fields[vol.Required(key, default=self._settings.get(key, key != "protect_unowned_work"))] = selector.BooleanSelector()
         return self.async_show_form(step_id="rules", data_schema=vol.Schema(fields), errors=errors)
+
+    async def async_step_advanced(self, user_input=None):
+        if user_input is not None:
+            return await self.async_step_calendar() if user_input.get("configure_advanced") else await self.async_step_notifications()
+        return self.async_show_form(step_id="advanced", data_schema=vol.Schema({vol.Required("configure_advanced", default=False): selector.BooleanSelector()}))
+
+    async def async_step_calendar(self, user_input=None):
+        errors = {}
+        if user_input is not None:
+            try:
+                weekdays = [_finite_number(v, 0, 6, True) for v in user_input.get("weekdays", list(range(7)))]
+                months = [_finite_number(v, 1, 12, True) for v in user_input.get("season_months", list(range(1, 13)))]
+                if not weekdays or not months:
+                    raise ValueError("invalid_calendar")
+                raw_dates = user_input.get("excluded_dates", "")
+                dates = [date.fromisoformat(v.strip()).isoformat() for v in raw_dates.split(",") if v.strip()]
+                groups = user_input.get("eligible_groups", [])
+                known = {z.get("group") for z in self._settings.get("zones", []) if z.get("group")}
+                if not isinstance(groups, list) or any(g not in known for g in groups):
+                    raise ValueError("invalid_calendar")
+                rest = _finite_number(user_input.get("rest_days_between_plans", self._settings.get("rest_days_between_plans", 0)), 0, 30, True)
+                self._settings.update(weekdays=sorted(set(weekdays)), season_months=sorted(set(months)), excluded_dates=sorted(set(dates)), eligible_groups=groups, rest_days_between_plans=rest)
+                return await self._after_step("safety_weather")
+            except (ValueError, TypeError, AttributeError):
+                errors["base"] = "invalid_calendar"
+        fields = {
+            vol.Required("weekdays", default=[str(n) for n in self._settings.get("weekdays", range(7))]): selector.SelectSelector({"options": [{"value": str(i), "label": day} for i, day in enumerate(("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))], "multiple": True}),
+            vol.Required("season_months", default=[str(n) for n in self._settings.get("season_months", range(1, 13))]): selector.SelectSelector({"options": [str(n) for n in range(1, 13)], "multiple": True}),
+            vol.Optional("excluded_dates", default=",".join(self._settings.get("excluded_dates", []))): selector.TextSelector(),
+            vol.Required("rest_days_between_plans", default=self._settings.get("rest_days_between_plans", 0)): _number(0, 30),
+        }
+        groups = sorted({z["group"] for z in self._settings.get("zones", []) if z.get("group")})
+        if groups:
+            fields[vol.Optional("eligible_groups", default=self._settings.get("eligible_groups", []))] = selector.SelectSelector({"options": groups, "multiple": True})
+        return self.async_show_form(step_id="calendar", data_schema=vol.Schema(fields), errors=errors)
+
+    async def _policy_step(self, step, user_input, numbers, booleans, next_step):
+        errors = {}
+        if user_input is not None:
+            try:
+                update = {key: _finite_number(user_input.get(key, self._settings.get(key, default)), low, high, True) for key, (default, low, high) in numbers.items()}
+                for key, default in booleans.items():
+                    value = user_input.get(key, self._settings.get(key, default))
+                    if type(value) is not bool:
+                        raise ValueError("invalid_number")
+                    update[key] = value
+                if step == "charging" and not self._settings.get("reserve_battery", 25) < update["recharge_min_target"] <= update["recharge_max_target"]:
+                    raise ValueError("invalid_battery")
+                if step == "safety_weather":
+                    entities = user_input.get("multipleweather_entities", [])
+                    if not isinstance(entities, list) or len(entities) > 5 or any(not isinstance(e, str) or not e.startswith("weather.") or self.hass.states.get(e) is None for e in entities):
+                        raise ValueError("missing_entity")
+                    update["multipleweather_entities"] = list(dict.fromkeys(entities))
+                self._settings.update(update)
+                return await self._after_step(next_step)
+            except (ValueError, TypeError) as exc:
+                errors["base"] = str(exc) if str(exc) in {"invalid_number", "invalid_battery", "missing_entity"} else "invalid_number"
+        fields = {vol.Required(k, default=self._settings.get(k, d)): _number(lo, hi) for k, (d, lo, hi) in numbers.items()}
+        fields.update({vol.Required(k, default=self._settings.get(k, d)): selector.BooleanSelector() for k, d in booleans.items()})
+        if step == "safety_weather":
+            fields[vol.Optional("multipleweather_entities", default=self._settings.get("multipleweather_entities", []))] = _entity("weather", True)
+        return self.async_show_form(step_id=step, data_schema=vol.Schema(fields), errors=errors)
+
+    async def async_step_safety_weather(self, user_input=None):
+        return await self._policy_step("safety_weather", user_input, {"minimum_temperature_c": (5, 0, 20), "rain_dry_minutes": (30, 0, 1440), "forecast_horizon_hours": (6, 1, 48), "forecast_probability_threshold": (50, 1, 100)}, {"light_rain_tolerance": False, "forecast_enabled": False}, "charging")
+
+    async def async_step_charging(self, user_input=None):
+        return await self._policy_step("charging", user_input, {"recharge_buffer": (10, 0, 30), "recharge_min_target": (60, 30, 100), "recharge_max_target": (95, 50, 100)}, {"adaptive_recharge": True}, "notifications")
 
     async def async_step_notifications(self, user_input=None):
         errors = {}
@@ -259,7 +380,7 @@ class MowerConfigFlow(WizardSteps, config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     def __init__(self):
-        self._settings = {"zones": [], "mode": "observe", "allow_handoff": False, "auto_recovery": False}
+        self._settings = {"zones": [], "mode": "observe", "allow_handoff": True, "auto_recovery": True, "protect_unowned_work": False, "adaptive_recharge": True}
 
     @staticmethod
     @callback
@@ -289,9 +410,10 @@ class MowerConfigFlow(WizardSteps, config_entries.ConfigFlow, domain=DOMAIN):
 
     def _suggest_bindings(self, device_id):
         entries = er.async_entries_for_device(er.async_get(self.hass), device_id)
-        hints = {"battery_entity": ("battery",), "progress_entity": ("progress",), "charging_entity": ("charging",), "activity_entity": ("activity",), "error_entity": ("self_check",), "rain_entity": ("rain",), "tracker_entity": (), "blade_time_entity": ("blade",)}
+        hints = {"battery_entity": ("battery",), "progress_entity": ("progress",), "charging_entity": ("charging",), "activity_entity": ("activity",), "error_entity": ("self_check",), "rain_entity": ("rain",), "tracker_entity": (), "blade_time_entity": ("blade",), "mileage_entity": ("maintenance_distance",), "rtk_entity": ("positioning_mode",)}
+        metadata = {"error_entity": "self_check", "mileage_entity": "maintenance_distance", "rtk_entity": "positioning_mode"}
         for key, words in hints.items():
-            candidates = [item.entity_id for item in entries if item.domain == BINDINGS[key] and self.hass.states.get(item.entity_id) and (item.translation_key == "self_check" if key == "error_entity" else (not words or any(word in item.entity_id for word in words)))]
+            candidates = [item.entity_id for item in entries if item.domain == BINDINGS[key] and self.hass.states.get(item.entity_id) and (item.translation_key == metadata[key] if key in metadata else (not words or any(word in item.entity_id for word in words)))]
             if len(candidates) == 1:
                 self._settings[key] = candidates[0]
 
@@ -306,7 +428,7 @@ class MowerOptionsFlow(WizardSteps, config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         if not self._settings:
             self._settings = deepcopy({**self.config_entry.data, **self.config_entry.options})
-        return self.async_show_menu(step_id="init", menu_options=["bindings", "zones", "rules", "notifications", "review"])
+        return self.async_show_menu(step_id="init", menu_options=["bindings", "zones", "rules", "calendar", "safety_weather", "charging", "notifications", "review"])
 
     async def async_step_zones(self, user_input=None):
         choices = [{"value": "add", "label": "Add an area"}] + [{"value": z["id"], "label": z["name"]} for z in self._settings["zones"]]

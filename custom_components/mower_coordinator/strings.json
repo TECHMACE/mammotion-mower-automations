@@ -12,7 +12,7 @@
       },
       "bindings": {
         "title": "Check the mower sensors",
-        "description": "Suggested sensors are selected only when their device association is unambiguous. Check each choice. Battery and progress must report percentages. Raw activity must match the supported adapter. Choose the current Self check sensor for mower health: its clear state is normal. Do not select historical error slots such as Error 1 code; those can retain old faults after recovery. Position and blade time are used as activity evidence. Rain, operator presence, and a safety permission sensor are required before control can be enabled; they can be omitted while observing. For manual safety permission, create a Toggle helper in Settings > Devices & services > Helpers, name it Lawn safety permission, and leave it off. Select that helper here, or use an existing safety binary sensor. Turn manual permission on only after inspecting property conditions. This is supervised permission, not obstruction detection; off or unavailable blocks movement. Optional weather adds protection; missing configured weather holds mowing. No sensor is bypassed with a fabricated safe value.",
+        "description": "Suggested sensors are selected only when their device association is unambiguous. Check each choice. Battery and progress must report percentages. Raw activity must match the supported adapter. Choose the current Self check sensor for mower health: its clear state is normal. Do not select historical error slots such as Error 1 code; those can retain old faults after recovery. Position and blade time are used as activity evidence. Rain, operator presence, and a safety permission sensor are required before control can be enabled; they can be omitted while observing. For manual safety permission, create a Toggle helper in Settings > Devices & services > Helpers, name it Lawn safety permission, and leave it off. Select that helper here, or use an existing safety binary sensor. Turn manual permission on only after inspecting property conditions. This is supervised permission, not obstruction detection; off or unavailable blocks movement. Optional weather adds protection; missing configured weather holds mowing. No sensor is bypassed with a fabricated safe value. Optional travel distance and RTK status strengthen physical recovery checks. Historical fault evidence is usable only as a code and timestamp pair scoped to the current incident; it cannot replace current Self check health. Automatic recovery requires fresh GPS position, travel distance (Maintenance distance) and RTK positioning mode Fix. These are suggested from the selected mower when unambiguous. If unavailable, choose observation mode or disable automatic recovery in rules until the bindings are supplied.",
         "data": {
           "battery_entity": "Battery percentage",
           "progress_entity": "Mowing progress percentage",
@@ -24,12 +24,16 @@
           "weather_entity": "Optional weather source",
           "tracker_entity": "Mower position tracker",
           "blade_time_entity": "Blade usage time",
-          "safety_entity": "Property safety permission (Toggle helper or binary sensor)"
+          "safety_entity": "Property safety permission (Toggle helper or binary sensor)",
+          "mileage_entity": "Mower travel distance",
+          "rtk_entity": "RTK position status",
+          "recent_fault_code_entity": "Recent fault code (requires matching timestamp)",
+          "recent_fault_time_entity": "Recent fault timestamp (requires matching code)"
         }
       },
       "zone": {
         "title": "Configure a mowing area",
-        "description": "Give this logical area a name and select its native mower area switches. Each switch must have a positive map hash and belong to this mower. Do not assign a native area twice. Enter one direction angle, such as 0, or a comma-separated sequence such as 0,90. The direction advances after verified completion; a resumed job keeps its original direction. Settings must be supported by your mower; runtime preflight blocks unsupported profiles. Optional cutting height and speed are explicit overrides, not guessed app settings.",
+        "description": "Give this logical area a name and select its native mower area switches. Each switch must have a positive map hash and belong to this mower. Do not assign a native area twice. Enter one direction angle, such as 0, or a comma-separated sequence such as 0,90. The direction advances after verified completion; a resumed job keeps its original direction. Settings must be supported by your mower; runtime preflight blocks unsupported profiles. Optional cutting height and speed are explicit overrides, not guessed app settings. Advanced: group areas under a shared name for calendar filtering. Monthly interval overrides use month numbers and days, for example {\"1\": 14, \"7\": 3}. Unlisted months use the normal interval. The stationary return limit bounds waiting away from the charger. Native path and order values must match your mower model. A group anchor becoming due makes its grouped followers eligible for the same plan; use a shared group name. Leave this off for independent area intervals.",
         "data": {
           "name": "Area name",
           "area_entities": "Native mower areas",
@@ -39,7 +43,15 @@
           "interval_days": "Days between completed cuts",
           "minimum_battery": "Minimum departure battery (%)",
           "blade_height": "Optional cutting height override (mm)",
-          "speed": "Optional mowing speed override (m/s)"
+          "speed": "Optional mowing speed override (m/s)",
+          "cutting_path_mode": "Native path mode (0\u20133)",
+          "mow_order": "Native mow order (0\u20131)",
+          "obstacle_laps": "Obstacle perimeter laps",
+          "not_before": "Do not mow before this date",
+          "group": "Area group (optional)",
+          "stationary_return_seconds": "Return after stationary completion (seconds, 0 disables)",
+          "seasonal_intervals": "Monthly interval overrides",
+          "group_anchor": "Use this area as the group schedule anchor"
         }
       },
       "more_areas": {
@@ -51,14 +63,28 @@
       },
       "rules": {
         "title": "Choose operating rules",
-        "description": "Times use Home Assistant\u2019s timezone. This alpha supports a daytime window that ends after it starts. The reserve is the battery level for returning; it is not a promise that docking will succeed. A higher reserve may be needed for your property. Weather thresholds apply only when an external weather source is selected. Wind is normalized to meters per second. Freshness is the maximum accepted weather age. Automatic obstruction recovery and charger-free handoff remain disabled in this alpha.",
+        "description": "Times use Home Assistant\u2019s timezone. This alpha supports a daytime window that ends after it starts. The reserve is the battery level for returning; it is not a promise that docking will succeed. A higher reserve may be needed for your property. Weather thresholds apply only when an external weather source is selected. Wind is normalized to meters per second. Freshness is the maximum accepted weather age. Automatic obstruction recovery and charger-free handoff remain disabled in this alpha. Automatic recovery and charger-free handoff are selected by default, but setup remains in observation mode until commissioning and arming. Recovery requires sustained lack of physical progress, a final telemetry grace period, and all safety gates; it never bypasses a fault based on an error number. Retries are bounded per incident, spaced by the cooldown, and stop for inspection when exhausted. Start confirmation time allows telemetry to catch up without duplicate starts. Handoff starts an eligible next area in place only after verified completion and sufficient battery; otherwise the mower returns to charge. Handoff battery must exceed the reserve. Saving options disarms control. Charger contact recovery requires stable charging and a battery increase; an accepted dock command alone is not success. Optional external-work protection allows an armed coordinator to request Dock for mowing started from another app or schedule when battery, rain, presence or time limits require a return. It never adopts or resumes that job. After a protective return, new plans stay blocked until the mower is docked, control is disarmed and you inspect it and reset the incident. Leave this off unless you want this explicit coordination with external starts.",
         "data": {
           "start_time": "Earliest mowing time",
           "end_time": "Latest mowing time",
           "reserve_battery": "Return battery reserve (%)",
           "resume_battery": "Battery required to resume (%)",
           "weather_max_age": "Maximum weather age (seconds)",
-          "wind_limit_mps": "Maximum wind (m/s)"
+          "wind_limit_mps": "Maximum wind (m/s)",
+          "auto_recovery": "Recover eligible stalled work automatically",
+          "allow_handoff": "Continue eligible next area without charging first",
+          "max_retries": "Maximum recovery attempts per incident",
+          "recovery_cooldown": "Minimum time between recovery attempts (seconds)",
+          "ack_timeout": "Start confirmation time (seconds)",
+          "handoff_minimum_battery": "Minimum battery for charger-free handoff (%)",
+          "recovery_observation_seconds": "No-progress observation before recovery (seconds)",
+          "recovery_grace_seconds": "Final telemetry grace before recovery (seconds)",
+          "charging_stable_seconds": "Charging stability confirmation (seconds)",
+          "return_timeout": "Return confirmation timeout (seconds)",
+          "freshness_seconds": "Maximum telemetry age (seconds)",
+          "contact_confirmation_seconds": "Charger contact confirmation window (seconds)",
+          "contact_battery_gain": "Battery increase required to confirm restored contact (%)",
+          "protect_unowned_work": "Allow protective return for externally started work"
         }
       },
       "notifications": {
@@ -78,6 +104,47 @@
         "description": "Areas: {areas}\n\nOperating window: {window}\n\n{weather}\n\n{readiness}\n\nSaving starts observation mode only. Read the readiness and status entities, test notifications, and check the setup guide. No mower movement is part of setup. Software checks cannot prove physical cutting or docking. A first normal mow must be supervised on an approved test installation. Existing saved progress is never relabeled to a changed map or profile. Saving changes disarms control again.",
         "data": {
           "understood": "I understand that setup starts observation only and physical operation is not yet verified"
+        }
+      },
+      "advanced": {
+        "title": "Optional advanced settings",
+        "description": "The defaults work for an everyday interval schedule. Choose advanced setup for calendar exclusions, seasonal rules, weather forecasts and adaptive charging. You can change these later in integration options.",
+        "data": {
+          "configure_advanced": "Customize calendar, weather and charging now"
+        }
+      },
+      "calendar": {
+        "title": "Calendar and seasonal eligibility",
+        "description": "Select allowed weekdays and months (1 is January). Excluded dates use YYYY-MM-DD separated by commas, for example 2027-01-01,2027-01-02. These holds also apply to recovery and recharge continuation. Empty eligible groups means all groups. Area-specific start dates and seasonal intervals are configured on each area. Rest days space completed plans apart without discarding unfinished work.",
+        "data": {
+          "weekdays": "Allowed weekdays",
+          "season_months": "Allowed months",
+          "excluded_dates": "Dates with no mowing",
+          "eligible_groups": "Eligible area groups (empty means all)",
+          "rest_days_between_plans": "Whole mower-free days between plans"
+        }
+      },
+      "safety_weather": {
+        "title": "Weather protection",
+        "description": "Configured sources must be available and fresh. The most restrictive weather source wins. The local rain sensor must still be dry. Light-rain tolerance is optional and applies only after this owned job has proven dry cutting; it never authorizes a wet launch. Forecast checking is optional and holds mowing when the required forecast is unavailable. The dry delay prevents immediate restart after rain.",
+        "data": {
+          "multipleweather_entities": "Additional weather sources (up to five)",
+          "minimum_temperature_c": "Minimum mowing temperature (\u00b0C)",
+          "rain_dry_minutes": "Dry delay after rain (minutes)",
+          "light_rain_tolerance": "Allow guarded continuation in light forecast rain",
+          "forecast_enabled": "Check forecasts before mowing",
+          "forecast_horizon_hours": "Forecast look-ahead (hours)",
+          "forecast_probability_threshold": "Hold at precipitation probability (%)"
+        }
+      },
+      "charging": {
+        "title": "Recharge planning",
+        "description": "Adaptive charging uses observed battery use for the remaining job and adds a buffer, bounded by your minimum and maximum targets. Without sufficient evidence the standard resume battery threshold applies. Stable charging must be verified before continuation; no movement is performed during setup.",
+        "data": {
+          "adaptive_recharge": "Adapt recharge target to remaining work",
+          "recharge_buffer": "Additional battery buffer (%)",
+          "recharge_min_target": "Minimum adaptive target (%)",
+          "recharge_max_target": "Maximum adaptive target (%)"
         }
       }
     },
@@ -104,7 +171,9 @@
       "too_many_destinations": "Choose at most ten notification destinations.",
       "invalid_event": "Choose events from the provided list.",
       "invalid_time": "Enter a valid notification time.",
-      "invalid_boolean": "Choose on or off for urgent exceptions."
+      "invalid_boolean": "Choose on or off for urgent exceptions.",
+      "invalid_calendar": "Choose at least one weekday and month, valid ISO dates, and existing area groups.",
+      "fault_pair_required": "Choose both the recent fault code and its matching timestamp, or leave both empty."
     },
     "abort": {
       "already_configured": "This mower already has a coordinator."
@@ -114,7 +183,7 @@
     "step": {
       "bindings": {
         "title": "Check the mower sensors",
-        "description": "Suggested sensors are selected only when their device association is unambiguous. Check each choice. Battery and progress must report percentages. Raw activity must match the supported adapter. Choose the current Self check sensor for mower health: its clear state is normal. Do not select historical error slots such as Error 1 code; those can retain old faults after recovery. Position and blade time are used as activity evidence. Rain, operator presence, and a safety permission sensor are required before control can be enabled; they can be omitted while observing. For manual safety permission, create a Toggle helper in Settings > Devices & services > Helpers, name it Lawn safety permission, and leave it off. Select that helper here, or use an existing safety binary sensor. Turn manual permission on only after inspecting property conditions. This is supervised permission, not obstruction detection; off or unavailable blocks movement. Optional weather adds protection; missing configured weather holds mowing. No sensor is bypassed with a fabricated safe value.",
+        "description": "Suggested sensors are selected only when their device association is unambiguous. Check each choice. Battery and progress must report percentages. Raw activity must match the supported adapter. Choose the current Self check sensor for mower health: its clear state is normal. Do not select historical error slots such as Error 1 code; those can retain old faults after recovery. Position and blade time are used as activity evidence. Rain, operator presence, and a safety permission sensor are required before control can be enabled; they can be omitted while observing. For manual safety permission, create a Toggle helper in Settings > Devices & services > Helpers, name it Lawn safety permission, and leave it off. Select that helper here, or use an existing safety binary sensor. Turn manual permission on only after inspecting property conditions. This is supervised permission, not obstruction detection; off or unavailable blocks movement. Optional weather adds protection; missing configured weather holds mowing. No sensor is bypassed with a fabricated safe value. Optional travel distance and RTK status strengthen physical recovery checks. Historical fault evidence is usable only as a code and timestamp pair scoped to the current incident; it cannot replace current Self check health. Automatic recovery requires fresh GPS position, travel distance (Maintenance distance) and RTK positioning mode Fix. These are suggested from the selected mower when unambiguous. If unavailable, choose observation mode or disable automatic recovery in rules until the bindings are supplied.",
         "data": {
           "battery_entity": "Battery percentage",
           "progress_entity": "Mowing progress percentage",
@@ -126,12 +195,16 @@
           "weather_entity": "Optional weather source",
           "tracker_entity": "Mower position tracker",
           "blade_time_entity": "Blade usage time",
-          "safety_entity": "Property safety permission (Toggle helper or binary sensor)"
+          "safety_entity": "Property safety permission (Toggle helper or binary sensor)",
+          "mileage_entity": "Mower travel distance",
+          "rtk_entity": "RTK position status",
+          "recent_fault_code_entity": "Recent fault code (requires matching timestamp)",
+          "recent_fault_time_entity": "Recent fault timestamp (requires matching code)"
         }
       },
       "zone": {
         "title": "Configure a mowing area",
-        "description": "Give this logical area a name and select its native mower area switches. Each switch must have a positive map hash and belong to this mower. Do not assign a native area twice. Enter one direction angle, such as 0, or a comma-separated sequence such as 0,90. The direction advances after verified completion; a resumed job keeps its original direction. Settings must be supported by your mower; runtime preflight blocks unsupported profiles. Optional cutting height and speed are explicit overrides, not guessed app settings.",
+        "description": "Give this logical area a name and select its native mower area switches. Each switch must have a positive map hash and belong to this mower. Do not assign a native area twice. Enter one direction angle, such as 0, or a comma-separated sequence such as 0,90. The direction advances after verified completion; a resumed job keeps its original direction. Settings must be supported by your mower; runtime preflight blocks unsupported profiles. Optional cutting height and speed are explicit overrides, not guessed app settings. Advanced: group areas under a shared name for calendar filtering. Monthly interval overrides use month numbers and days, for example {\"1\": 14, \"7\": 3}. Unlisted months use the normal interval. The stationary return limit bounds waiting away from the charger. Native path and order values must match your mower model. A group anchor becoming due makes its grouped followers eligible for the same plan; use a shared group name. Leave this off for independent area intervals.",
         "data": {
           "name": "Area name",
           "area_entities": "Native mower areas",
@@ -141,19 +214,41 @@
           "interval_days": "Days between completed cuts",
           "minimum_battery": "Minimum departure battery (%)",
           "blade_height": "Optional cutting height override (mm)",
-          "speed": "Optional mowing speed override (m/s)"
+          "speed": "Optional mowing speed override (m/s)",
+          "cutting_path_mode": "Native path mode (0\u20133)",
+          "mow_order": "Native mow order (0\u20131)",
+          "obstacle_laps": "Obstacle perimeter laps",
+          "not_before": "Do not mow before this date",
+          "group": "Area group (optional)",
+          "stationary_return_seconds": "Return after stationary completion (seconds, 0 disables)",
+          "seasonal_intervals": "Monthly interval overrides",
+          "group_anchor": "Use this area as the group schedule anchor"
         }
       },
       "rules": {
         "title": "Choose operating rules",
-        "description": "Times use Home Assistant\u2019s timezone. This alpha supports a daytime window that ends after it starts. The reserve is the battery level for returning; it is not a promise that docking will succeed. A higher reserve may be needed for your property. Weather thresholds apply only when an external weather source is selected. Wind is normalized to meters per second. Freshness is the maximum accepted weather age. Automatic obstruction recovery and charger-free handoff remain disabled in this alpha.",
+        "description": "Times use Home Assistant\u2019s timezone. This alpha supports a daytime window that ends after it starts. The reserve is the battery level for returning; it is not a promise that docking will succeed. A higher reserve may be needed for your property. Weather thresholds apply only when an external weather source is selected. Wind is normalized to meters per second. Freshness is the maximum accepted weather age. Automatic obstruction recovery and charger-free handoff remain disabled in this alpha. Automatic recovery and charger-free handoff are selected by default, but setup remains in observation mode until commissioning and arming. Recovery requires sustained lack of physical progress, a final telemetry grace period, and all safety gates; it never bypasses a fault based on an error number. Retries are bounded per incident, spaced by the cooldown, and stop for inspection when exhausted. Start confirmation time allows telemetry to catch up without duplicate starts. Handoff starts an eligible next area in place only after verified completion and sufficient battery; otherwise the mower returns to charge. Handoff battery must exceed the reserve. Saving options disarms control. Charger contact recovery requires stable charging and a battery increase; an accepted dock command alone is not success. Optional external-work protection allows an armed coordinator to request Dock for mowing started from another app or schedule when battery, rain, presence or time limits require a return. It never adopts or resumes that job. After a protective return, new plans stay blocked until the mower is docked, control is disarmed and you inspect it and reset the incident. Leave this off unless you want this explicit coordination with external starts.",
         "data": {
           "start_time": "Earliest mowing time",
           "end_time": "Latest mowing time",
           "reserve_battery": "Return battery reserve (%)",
           "resume_battery": "Battery required to resume (%)",
           "weather_max_age": "Maximum weather age (seconds)",
-          "wind_limit_mps": "Maximum wind (m/s)"
+          "wind_limit_mps": "Maximum wind (m/s)",
+          "auto_recovery": "Recover eligible stalled work automatically",
+          "allow_handoff": "Continue eligible next area without charging first",
+          "max_retries": "Maximum recovery attempts per incident",
+          "recovery_cooldown": "Minimum time between recovery attempts (seconds)",
+          "ack_timeout": "Start confirmation time (seconds)",
+          "handoff_minimum_battery": "Minimum battery for charger-free handoff (%)",
+          "recovery_observation_seconds": "No-progress observation before recovery (seconds)",
+          "recovery_grace_seconds": "Final telemetry grace before recovery (seconds)",
+          "charging_stable_seconds": "Charging stability confirmation (seconds)",
+          "return_timeout": "Return confirmation timeout (seconds)",
+          "freshness_seconds": "Maximum telemetry age (seconds)",
+          "contact_confirmation_seconds": "Charger contact confirmation window (seconds)",
+          "contact_battery_gain": "Battery increase required to confirm restored contact (%)",
+          "protect_unowned_work": "Allow protective return for externally started work"
         }
       },
       "notifications": {
@@ -183,7 +278,10 @@
           "zones": "Add, edit, or remove areas",
           "rules": "Operating hours and battery rules",
           "notifications": "Notification destinations and preferences",
-          "review": "Review and save"
+          "review": "Review and save",
+          "calendar": "Calendar and seasonal eligibility",
+          "safety_weather": "Weather protection",
+          "charging": "Recharge planning"
         }
       },
       "zones": {
@@ -206,6 +304,47 @@
         "description": "This removes the area from future scheduling, not from your mower map. Saved work is retained as evidence and cannot be silently reassigned. At least one configured area is required.",
         "data": {
           "confirm_delete": "Remove this area from the coordinator"
+        }
+      },
+      "advanced": {
+        "title": "Optional advanced settings",
+        "description": "The defaults work for an everyday interval schedule. Choose advanced setup for calendar exclusions, seasonal rules, weather forecasts and adaptive charging. You can change these later in integration options.",
+        "data": {
+          "configure_advanced": "Customize calendar, weather and charging now"
+        }
+      },
+      "calendar": {
+        "title": "Calendar and seasonal eligibility",
+        "description": "Select allowed weekdays and months (1 is January). Excluded dates use YYYY-MM-DD separated by commas, for example 2027-01-01,2027-01-02. These holds also apply to recovery and recharge continuation. Empty eligible groups means all groups. Area-specific start dates and seasonal intervals are configured on each area. Rest days space completed plans apart without discarding unfinished work.",
+        "data": {
+          "weekdays": "Allowed weekdays",
+          "season_months": "Allowed months",
+          "excluded_dates": "Dates with no mowing",
+          "eligible_groups": "Eligible area groups (empty means all)",
+          "rest_days_between_plans": "Whole mower-free days between plans"
+        }
+      },
+      "safety_weather": {
+        "title": "Weather protection",
+        "description": "Configured sources must be available and fresh. The most restrictive weather source wins. The local rain sensor must still be dry. Light-rain tolerance is optional and applies only after this owned job has proven dry cutting; it never authorizes a wet launch. Forecast checking is optional and holds mowing when the required forecast is unavailable. The dry delay prevents immediate restart after rain.",
+        "data": {
+          "multipleweather_entities": "Additional weather sources (up to five)",
+          "minimum_temperature_c": "Minimum mowing temperature (\u00b0C)",
+          "rain_dry_minutes": "Dry delay after rain (minutes)",
+          "light_rain_tolerance": "Allow guarded continuation in light forecast rain",
+          "forecast_enabled": "Check forecasts before mowing",
+          "forecast_horizon_hours": "Forecast look-ahead (hours)",
+          "forecast_probability_threshold": "Hold at precipitation probability (%)"
+        }
+      },
+      "charging": {
+        "title": "Recharge planning",
+        "description": "Adaptive charging uses observed battery use for the remaining job and adds a buffer, bounded by your minimum and maximum targets. Without sufficient evidence the standard resume battery threshold applies. Stable charging must be verified before continuation; no movement is performed during setup.",
+        "data": {
+          "adaptive_recharge": "Adapt recharge target to remaining work",
+          "recharge_buffer": "Additional battery buffer (%)",
+          "recharge_min_target": "Minimum adaptive target (%)",
+          "recharge_max_target": "Maximum adaptive target (%)"
         }
       }
     },
@@ -232,7 +371,9 @@
       "too_many_destinations": "Choose at most ten notification destinations.",
       "invalid_event": "Choose events from the provided list.",
       "invalid_time": "Enter a valid notification time.",
-      "invalid_boolean": "Choose on or off for urgent exceptions."
+      "invalid_boolean": "Choose on or off for urgent exceptions.",
+      "invalid_calendar": "Choose at least one weekday and month, valid ISO dates, and existing area groups.",
+      "fault_pair_required": "Choose both the recent fault code and its matching timestamp, or leave both empty."
     }
   },
   "selector": {

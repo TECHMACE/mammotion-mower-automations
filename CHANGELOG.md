@@ -2,13 +2,24 @@
 
 ## Unreleased
 
-### Mower Coordinator integration preview (0.2.0-alpha.1)
+### Mower Coordinator configurable parity preview (0.2.0-alpha.2)
+
+- Expose automatic recovery and charger-free handoff as configurable policies, default on; commissioning remains observation-first and disarmed.
+- Add calendar eligibility, excluded dates, seasonal intervals, grouped work, rest days and area-specific stationary limits.
+- Add adaptive recharge, multiple weather sources, optional hourly forecast checks, dry-out delay and optional light-rain tolerance without disabling native safety.
+- Require fresh motion evidence for bounded recovery; persist attempt accounting and retain saved work.
+- Recover stalled native returns through pause, fresh settled telemetry and Dock, avoiding Mammotion's Dock-while-returning cancellation behavior.
+- Confirm charging contact through sustained contact and battery gain; bound redock attempts.
+- Add optional protection of unowned work without checkpoint adoption, automatic restart or silent handoff of ownership.
+- Current software validation: 225 tests, no skips, official HA 2026.10.4 container with network disabled. Expanded native simulator acceptance is pending; physical commissioning remains unproved.
+
+### Earlier Mower Coordinator preview (0.2.0-alpha.1)
 
 - Add native setup and options wizards for arbitrary mowing areas, direction rotation, operating rules, optional weather, and notification routing.
 - Add persistent job ownership, guarded checkpoints, low-battery return, recharge continuation, readiness explanations, and deliberate commissioning controls.
 - Add testable notifications with quiet hours, event choices, urgent override, rate limits, and isolated delivery failures.
 - Add a network-isolated Home Assistant Container lab, fake mower, native-flow/runtime acceptance checks, HACS metadata, and reproducible component-only ZIP packaging.
-- Start disarmed after install, restart, and options changes. Automatic obstruction recovery and charger-free handoff remain disabled in this alpha; physical commissioning is still required.
+- Start disarmed after install, restart, and options changes. That initial preview omitted automatic obstruction recovery and charger-free handoff; alpha.2 adds their configurable policies. Physical commissioning is still required.
 
 ### YAML reference maintenance
 

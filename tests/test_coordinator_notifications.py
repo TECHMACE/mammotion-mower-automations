@@ -25,7 +25,7 @@ class FakeServices:
         self.fail = {}
         self.hang = set()
         self.available = {('notify', 'send_message'), ('notify', 'legacy_pager'),
-                          ('notify', 'family_group'), ('persistent_notification', 'create')}
+                          ('notify', 'family_group'), ('persistent_notification', 'create'), ('persistent_notification', 'dismiss')}
 
     def has_service(self, domain, service):
         return (domain, service) in self.available
@@ -144,6 +144,13 @@ class SendTests(unittest.IsolatedAsyncioTestCase):
         self.hass = FakeHass()
         self.clock = Clock(local_hour=12)
         self.manager = NotificationManager(self.hass, 'Entry-01', config(), clock=self.clock)
+
+    async def test_verified_recovery_dismisses_only_own_persistent_notice(self):
+        await self.manager.async_send('attention', 'Mower needs help')
+        notice=persistent(self.hass)[-1]['data']['notification_id']
+        self.assertTrue(await self.manager.async_clear_attention())
+        self.assertEqual(persistent(self.hass)[-1]['service'],'dismiss')
+        self.assertEqual(persistent(self.hass)[-1]['data'],{'notification_id':notice})
 
     async def test_attention_reaches_every_destination_and_persistent(self):
         result = await self.manager.async_send('attention', 'Mower needs help in Zone A')

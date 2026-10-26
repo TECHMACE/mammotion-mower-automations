@@ -57,7 +57,8 @@ class WizardTests(unittest.IsolatedAsyncioTestCase):
         result = await self.flow.async_step_more_areas({'add_another': False})
         self.assertEqual(result['step_id'], 'rules')
         result = await self.flow.async_step_rules({'start_time': '09:00:00', 'end_time': '19:00:00', 'reserve_battery': 25, 'resume_battery': 85})
-        self.assertEqual(result['step_id'], 'notifications')
+        self.assertEqual(result['step_id'], 'advanced')
+        await self.flow.async_step_advanced({'configure_advanced': False})
         self.hass.states.async_set('notify.example', 'unknown')
         result = await self.flow.async_step_notifications({'targets': ['notify.example'], 'events': ['complete'], 'quiet_start': '22:00', 'quiet_end': '08:00'})
         self.assertEqual(result['step_id'], 'review')
@@ -67,8 +68,10 @@ class WizardTests(unittest.IsolatedAsyncioTestCase):
         result = await self.configure()
         self.assertEqual(result['type'], 'create_entry')
         self.assertEqual(result['data']['mode'], 'observe')
-        self.assertFalse(result['data']['auto_recovery'])
-        self.assertFalse(result['data']['allow_handoff'])
+        self.assertTrue(result['data']['auto_recovery'])
+        self.assertTrue(result['data']['allow_handoff'])
+        self.assertFalse(result['data']['protect_unowned_work'])
+        self.assertTrue(result['data']['adaptive_recharge'])
         self.assertEqual(result['data']['zones'][0]['angles'], [0, 90])
         self.assertEqual(result['data']['notifications']['targets'], ['notify.example'])
         self.assertEqual(self.calls, [])
@@ -110,6 +113,24 @@ class WizardTests(unittest.IsolatedAsyncioTestCase):
                 self.assertIn('clear state is normal', step['description'])
                 self.assertIn('Do not select historical error', step['description'])
 
+    async def test_recovery_discovery_uses_registry_metadata_and_avoids_ambiguity(self):
+        distance = SimpleNamespace(entity_id='sensor.renamed_distance', domain='sensor', translation_key='maintenance_distance')
+        rtk = SimpleNamespace(entity_id='sensor.renamed_position_mode', domain='sensor', translation_key='positioning_mode')
+        tracker = SimpleNamespace(entity_id='device_tracker.renamed_mower', domain='device_tracker', translation_key=None)
+        for entry in (distance, rtk, tracker):
+            self.hass.states.async_set(entry.entity_id, 'Fix' if entry is rtk else '10')
+        with patch.object(flow.er, 'async_entries_for_device', return_value=[distance, rtk, tracker]):
+            self.flow._suggest_bindings('example-device')
+        self.assertEqual(self.flow._settings['mileage_entity'], distance.entity_id)
+        self.assertEqual(self.flow._settings['rtk_entity'], rtk.entity_id)
+        self.assertEqual(self.flow._settings['tracker_entity'], tracker.entity_id)
+        self.flow._settings.clear()
+        second = SimpleNamespace(entity_id='sensor.other_distance', domain='sensor', translation_key='maintenance_distance')
+        self.hass.states.async_set(second.entity_id, '10')
+        with patch.object(flow.er, 'async_entries_for_device', return_value=[distance, second]):
+            self.flow._suggest_bindings('example-device')
+        self.assertNotIn('mileage_entity', self.flow._settings)
+
     async def test_multiple_areas_and_overlap_rejection(self):
         await self.configure()
         result = await self.flow.async_step_zone({'name': 'Two', 'area_entities': ['switch.area_two'], 'angles': '45'})
@@ -126,6 +147,41 @@ class WizardTests(unittest.IsolatedAsyncioTestCase):
             with self.subTest(speed=speed), self.assertRaisesRegex(ValueError, 'invalid_number'):
                 flow.validate_zone({'name': 'One', 'area_entities': ['switch.area_one'], 'speed': speed}, [])
 
+    async def test_advanced_calendar_weather_charge_and_profile_validation(self):
+        await self.configure()
+        self.flow._settings['zones'][0]['group'] = 'Main'
+        result = await self.flow.async_step_calendar({'weekdays': [], 'season_months': ['1']})
+        self.assertEqual(result['errors']['base'], 'invalid_calendar')
+        result = await self.flow.async_step_calendar({'excluded_dates': '2027-02-30'})
+        self.assertEqual(result['errors']['base'], 'invalid_calendar')
+        for invalid in (-1, 31, 1.5):
+            result = await self.flow.async_step_calendar({'rest_days_between_plans': invalid})
+            self.assertEqual(result['errors']['base'], 'invalid_calendar')
+        result = await self.flow.async_step_calendar({'weekdays': ['0', '2'], 'season_months': ['3', '10'], 'excluded_dates': '2027-01-01', 'eligible_groups': ['Main']})
+        self.assertEqual(result['step_id'], 'safety_weather')
+        self.assertEqual(self.flow._settings['weekdays'], [0, 2])
+        self.hass.states.async_set('weather.additional', 'sunny')
+        result = await self.flow.async_step_safety_weather({'multipleweather_entities': ['weather.additional'], 'forecast_enabled': True})
+        self.assertEqual(result['step_id'], 'charging')
+        self.assertFalse(self.flow._settings['light_rain_tolerance'])
+        result = await self.flow.async_step_charging({'recharge_min_target': 90, 'recharge_max_target': 80})
+        self.assertEqual(result['errors']['base'], 'invalid_battery')
+        result = await self.flow.async_step_charging({})
+        self.assertEqual(result['step_id'], 'notifications')
+        self.assertTrue(self.flow._settings['adaptive_recharge'])
+        zone = flow.validate_zone({'name': 'One', 'area_entities': ['switch.area_one'], 'not_before': '2027-01-01', 'group': 'Main', 'seasonal_intervals': {'1': 14}, 'cutting_path_mode': 3, 'mow_order': 0, 'obstacle_laps': 4, 'stationary_return_seconds': 120}, [])
+        self.assertEqual(zone['seasonal_intervals'], {'1': 14})
+        anchor = flow.validate_zone({'name': 'Anchor', 'area_entities': ['switch.area_one'], 'group': 'Main', 'group_anchor': True}, [])
+        self.assertTrue(anchor['group_anchor'])
+        with self.assertRaises(ValueError):
+            flow.validate_zone({'name': 'Anchor', 'area_entities': ['switch.area_one'], 'group_anchor': True}, [])
+        for extra in ({'seasonal_intervals': {'13': 10}}, {'seasonal_intervals': {'1': 0}}, {'cutting_path_mode': 4}, {'stationary_return_seconds': -1}, {'not_before': 'bad-date'}):
+            with self.subTest(extra=extra), self.assertRaises(ValueError):
+                flow.validate_zone({'name': 'One', 'area_entities': ['switch.area_one'], **extra}, [])
+        lone = {**self.bindings, 'recent_fault_time_entity': ''}
+        self.assertEqual(self.flow._binding_errors(lone)['base'], 'fault_pair_required')
+        self.assertEqual(self.calls, [])
+
     async def test_bad_time_and_reserve_above_area_floor_rejected(self):
         await self.configure()
         result = await self.flow.async_step_rules({'start_time': '19:00', 'end_time': '09:00', 'reserve_battery': 25, 'resume_battery': 85})
@@ -133,6 +189,30 @@ class WizardTests(unittest.IsolatedAsyncioTestCase):
         self.flow._settings['zones'][0]['minimum_battery'] = 30
         result = await self.flow.async_step_rules({'start_time': '09:00', 'end_time': '19:00', 'reserve_battery': 30, 'resume_battery': 85})
         self.assertEqual(result['errors']['base'], 'invalid_battery')
+
+    async def test_recovery_rules_bounds_defaults_and_explicit_disable(self):
+        await self.configure()
+        rules = {'start_time': '09:00', 'end_time': '19:00', 'reserve_battery': 25, 'resume_battery': 85}
+        for key, (default, minimum, maximum) in flow.RECOVERY_NUMBERS.items():
+            self.assertEqual(self.flow._settings[key], default)
+            for invalid in (minimum - 1, maximum + 1, float('nan'), 30.5):
+                with self.subTest(key=key, invalid=invalid):
+                    result = await self.flow.async_step_rules({**rules, key: invalid})
+                    self.assertEqual(result['errors']['base'], 'invalid_number')
+        result = await self.flow.async_step_rules({**rules, 'reserve_battery': 35, 'handoff_minimum_battery': 35})
+        self.assertEqual(result['errors']['base'], 'invalid_battery')
+        result = await self.flow.async_step_rules({**rules, 'protect_unowned_work': 'true'})
+        self.assertEqual(result['errors']['base'], 'invalid_number')
+        result = await self.flow.async_step_rules({**rules, 'auto_recovery': False, 'allow_handoff': False, 'max_retries': 1, 'protect_unowned_work': True})
+        self.assertEqual(result['step_id'], 'advanced')
+        await self.flow.async_step_advanced({'configure_advanced': False})
+        saved = await self.flow.async_step_review({'understood': True})
+        self.assertFalse(saved['data']['auto_recovery'])
+        self.assertFalse(saved['data']['allow_handoff'])
+        self.assertEqual(saved['data']['max_retries'], 1)
+        self.assertTrue(saved['data']['protect_unowned_work'])
+        self.assertEqual(saved['data']['mode'], 'observe')
+        self.assertEqual(self.calls, [])
 
     async def test_missing_entities_actions_and_acknowledgment_rejected(self):
         await self.configure()

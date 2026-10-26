@@ -6,15 +6,18 @@ This is for **Mammotion mowers using Home Assistant**. Pick your mower, set up y
 
 Built from real mowing automation work, now being packaged so other people can set it up for their own lawn. This is a community project, not an official Mammotion product.
 
-**New: `0.2.0-alpha.1` integration and native setup wizard.** Configure areas and direction sequences, battery limits, operating hours, optional weather, and notification destinations in the UI. It starts in observation mode and explains its readiness checks before you enable control.
+**`0.2.0-alpha.2`: configurable scheduling, recovery and direct area handoff.** Choose your areas and direction sequences, calendar and rest days, grouped work, battery targets, weather policy and notifications in Home Assistant. Automatic recovery and charger-free handoff default on as policies; setup still starts in observation mode with control disarmed.
 
 - [Integration setup and first-run guide](docs/INTEGRATION.md)
-- [Isolated simulator lab](lab/README.md)
+- [Where the original automation behaviors live now](docs/FEATURE_PARITY.md)
+- [What has been exercised in the lab](lab/BEHAVIOR_MATRIX.md)
 - [Validation and release status](docs/INTEGRATION_VALIDATION.md)
 
-This is a development alpha, not a certified universal mower controller. Real-model adapter compatibility and supervised physical commissioning are required. Automatic obstruction recovery and charger-free handoff are not enabled in this first integration alpha. The mature YAML reference remains available below; do not run both controllers together.
+The coordinator keeps unfinished work, waits for credible movement reports before retrying, and checks sustained charging rather than treating a Dock command as success. Adaptive recharge, optional forecast checks and dry-out holds help it decide when to continue. Optional protection for externally started work can send it home, but never takes over or restarts that work.
 
-The integration is developed on the `feat/mower-coordinator` branch until its pull request is merged. For that preview, download that branch and use the manual installation instructions. HACS installation applies once a version containing `custom_components/mower_coordinator` is available on the repository default branch or an integration release.
+This is a development alpha for Mammotion, not a certified universal mower controller. Model compatibility and supervised physical commissioning remain necessary. Keep native safety protections on, and run only one coordinator. The original YAML reference is still available below.
+
+For a preview that is not yet on the default branch or released, use the development branch or reviewed component ZIP and the manual installation guide. Check the version before installing through HACS.
 
 ## Fork it. Make it yours. Spread the love.
 
