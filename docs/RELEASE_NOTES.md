@@ -18,4 +18,4 @@ Optional external-work protection defaults off. If you enable it, the coordinato
 
 Fork it, branch it, improve it and spread the love. The [MIT license](../LICENSE) permits using, modifying and redistributing your version, including commercially; keep its license and copyright notice. Pull requests are welcome, not a condition of using your own changes.
 
-This is an independent community project, not an official Mammotion product. Start with the [setup guide](INTEGRATION.md). Use the intended branch or component ZIP for a preview; HACS availability depends on the version published to the repository.
+This is an independent community project, not an official Mammotion product. Start with the [setup guide](INTEGRATION.md). Install this alpha through the HACS custom repository, selecting v0.2.0-alpha.2 with beta versions enabled if needed. The [start-here guide](START_HERE.md) includes HACS installation and the complete setup path.

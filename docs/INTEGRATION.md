@@ -10,9 +10,9 @@ This is a development alpha. The [validation notes](INTEGRATION_VALIDATION.md) a
 
 Use Home Assistant 2026.10.4 or newer and a working Mammotion integration. Map and check your property in the Mammotion app first. Disable competing native schedules and older mower controllers before arming this one; do not run the YAML reference alongside it.
 
-For a development preview, copy `custom_components/mower_coordinator` from the intended branch or reviewed component ZIP into your Home Assistant configuration's `custom_components` directory, then restart Home Assistant. Verify `custom_components/mower_coordinator/manifest.json` exists. A ZIP is a component distribution, not a Home Assistant backup.
+**New to HACS or Home Assistant integrations? Start with [the click-by-click installation guide](START_HERE.md).** It covers installing HACS, connecting Mammotion-HA, downloading this coordinator, notifications and the first setup test.
 
-Once the integration version you want is available through the repository's default branch or release, add [this repository](https://github.com/TECHMACE/mammotion-mower-automations) as a HACS custom repository of type **Integration**, download Mammotion Mower Coordinator and restart. Check the downloaded version; an older YAML-only release does not install the component.
+Add [this repository](https://github.com/TECHMACE/mammotion-mower-automations) as a HACS custom repository of type **Integration**. Choose `v0.2.0-alpha.2`, enabling beta versions if needed, then restart HA. The older `v0.1.0-alpha.1` is a YAML reference, not this integration. Manual component ZIP installation is covered in the start-here guide.
 
 Open **Settings → Devices & Services → Add Integration → Mammotion Mower Coordinator**. The wizard reads state; it does not send movement commands or notifications. Setup, restart and options reload leave **Automatic control off** and **Hold new work on**.
 

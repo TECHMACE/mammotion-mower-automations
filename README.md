@@ -8,7 +8,8 @@ Built from real mowing automation work, now being packaged so other people can s
 
 **`0.2.0-alpha.2`: configurable scheduling, recovery and direct area handoff.** Choose your areas and direction sequences, calendar and rest days, grouped work, battery targets, weather policy and notifications in Home Assistant. Automatic recovery and charger-free handoff default on as policies; setup still starts in observation mode with control disarmed.
 
-- [Integration setup and first-run guide](docs/INTEGRATION.md)
+- **[Start here: install HACS, connect your mower and run the setup wizard](docs/START_HERE.md)**
+- [Full settings and first-run guide](docs/INTEGRATION.md)
 - [Where the original automation behaviors live now](docs/FEATURE_PARITY.md)
 - [What has been exercised in the lab](lab/BEHAVIOR_MATRIX.md)
 - [Validation and release status](docs/INTEGRATION_VALIDATION.md)
@@ -17,7 +18,7 @@ The coordinator keeps unfinished work, waits for credible movement reports befor
 
 This is a development alpha for Mammotion, not a certified universal mower controller. Model compatibility and supervised physical commissioning remain necessary. Keep native safety protections on, and run only one coordinator. The original YAML reference is still available below.
 
-For a preview that is not yet on the default branch or released, use the development branch or reviewed component ZIP and the manual installation guide. Check the version before installing through HACS.
+Install through HACS as a **custom repository** of type **Integration**. Select **v0.2.0-alpha.2** (enable beta versions if needed), restart HA, then add **Mammotion Mower Coordinator** under Devices & services. The [start-here guide](docs/START_HERE.md) walks through HACS installation too. This is not yet a default HACS catalog listing.
 
 ## Fork it. Make it yours. Spread the love.
 

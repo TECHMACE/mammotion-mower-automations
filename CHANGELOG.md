@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.2.0-alpha.2 — 2026-10-26
+
+- Publish the integration for HACS custom-repository installation with a beginner start-here guide covering HACS, Mammotion connection, setup, notifications and first-run checks.
 
 ### Mower Coordinator configurable parity preview (0.2.0-alpha.2)
 
