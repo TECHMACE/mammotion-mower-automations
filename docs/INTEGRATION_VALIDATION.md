@@ -20,7 +20,7 @@ All mower actions above were simulated. The lab was left with automatic control 
 python -m pip install -r requirements-dev.txt
 python -m unittest discover -s tests -v
 python tools/check_privacy.py
-python tools/check_integration.py --output build/mower-coordinator.zip
+python tools/check_integration.py --output build/mammotion-mower-coordinator.zip
 ```
 
 Config-flow tests additionally require the pinned Home Assistant version used in `.github/workflows/validate.yml`. The workflow checks the original YAML configuration, integration metadata, HACS rules, and a fresh isolated HA runtime. The ZIP contains only the allowlisted integration directory, excluding lab storage, accounts, local maps, and test evidence.

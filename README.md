@@ -1,6 +1,10 @@
-# Mower Coordinator for Home Assistant
+# Mammotion Mower Coordinator for Home Assistant
 
-A configurable custom integration for coordinating Mammotion mowing areas, saved progress, charging, and notifications through Home Assistant.
+Let the mower mow. You have other things to do.
+
+This is for **Mammotion mowers using Home Assistant**. Pick your mower, set up your areas and cutting directions, choose when it can work, and tell it where to send notifications. It keeps track of unfinished work and explains what it is waiting on.
+
+Built from real mowing automation work, now being packaged so other people can set it up for their own lawn. This is a community project, not an official Mammotion product.
 
 **New: `0.2.0-alpha.1` integration and native setup wizard.** Configure areas and direction sequences, battery limits, operating hours, optional weather, and notification destinations in the UI. It starts in observation mode and explains its readiness checks before you enable control.
 
@@ -11,6 +15,14 @@ A configurable custom integration for coordinating Mammotion mowing areas, saved
 This is a development alpha, not a certified universal mower controller. Real-model adapter compatibility and supervised physical commissioning are required. Automatic obstruction recovery and charger-free handoff are not enabled in this first integration alpha. The mature YAML reference remains available below; do not run both controllers together.
 
 The integration is developed on the `feat/mower-coordinator` branch until its pull request is merged. For that preview, download that branch and use the manual installation instructions. HACS installation applies once a version containing `custom_components/mower_coordinator` is available on the repository default branch or an integration release.
+
+## Fork it. Make it yours. Spread the love.
+
+Want to change the rules, add a feature, or take this in a completely different direction? Go for it. Fork the repo, branch it, and build what works for you. It is [MIT licensed](LICENSE), so you can use, modify, and redistribute it, including commercially. Keep the license and copyright notice with your copies.
+
+If you fix something or make it easier for the next person, a pull request is welcome. You do not have to send changes back to use your own version.
+
+Read the [alpha release notes](docs/RELEASE_NOTES.md) for what is ready and what still needs proving.
 
 ---
 

@@ -1,9 +1,9 @@
 {
-  "title": "Mower Coordinator",
+  "title": "Mammotion Mower Coordinator",
   "config": {
     "step": {
       "user": {
-        "title": "Welcome to Mower Coordinator",
+        "title": "Welcome to Mammotion Mower Coordinator",
         "description": "Choose an already configured Mammotion mower. This companion organizes mowing areas, preserves progress, and explains why work is waiting. Setup only reads your configuration; it does not move the mower. Your mower must already be mapped in its app. This alpha starts in observation mode.",
         "data": {
           "name": "Name for this coordinator",

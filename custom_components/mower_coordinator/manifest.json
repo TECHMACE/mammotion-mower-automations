@@ -1,6 +1,6 @@
 {
   "domain": "mower_coordinator",
-  "name": "Mower Coordinator",
+  "name": "Mammotion Mower Coordinator",
   "after_dependencies": [
     "notify",
     "persistent_notification"

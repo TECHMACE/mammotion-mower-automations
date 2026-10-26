@@ -11,8 +11,8 @@ class MowerEntity(Entity):
         self._attr_name = name
         self._attr_device_info = DeviceInfo(
             identifiers={("mower_coordinator", runtime.entry.entry_id)},
-            name=runtime.config.get("name", "Mower Coordinator"),
-            manufacturer="Community", model="Mower Coordinator alpha",
+            name=runtime.config.get("name", "Mammotion Mower Coordinator"),
+            manufacturer="Community", model="Mammotion Mower Coordinator alpha",
         )
 
     async def async_added_to_hass(self):

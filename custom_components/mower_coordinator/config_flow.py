@@ -285,7 +285,7 @@ class MowerConfigFlow(WizardSteps, config_entries.ConfigFlow, domain=DOMAIN):
                     self._settings["device_id"] = registered.device_id
                     self._suggest_bindings(registered.device_id)
                 return await self.async_step_bindings()
-        return self.async_show_form(step_id="user", data_schema=vol.Schema({vol.Required("name", default="Mower coordinator"): selector.TextSelector(), vol.Required("mower_entity"): _entity("lawn_mower")}), errors=errors)
+        return self.async_show_form(step_id="user", data_schema=vol.Schema({vol.Required("name", default="Mammotion mower coordinator"): selector.TextSelector(), vol.Required("mower_entity"): _entity("lawn_mower")}), errors=errors)
 
     def _suggest_bindings(self, device_id):
         entries = er.async_entries_for_device(er.async_get(self.hass), device_id)

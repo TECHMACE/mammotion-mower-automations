@@ -13,11 +13,11 @@ jobs:
       - run: python -m pip install -r requirements-dev.txt
       - run: python -m unittest discover -s tests -v
       - run: python tools/check_privacy.py
-      - run: python tools/check_integration.py --output build/mower-coordinator.zip
+      - run: python tools/check_integration.py --output build/mammotion-mower-coordinator.zip
       - uses: actions/upload-artifact@v4
         with:
-          name: mower-coordinator-manual-install
-          path: build/mower-coordinator.zip
+          name: mammotion-mower-coordinator-manual-install
+          path: build/mammotion-mower-coordinator.zip
           if-no-files-found: error
   home-assistant-validation:
     runs-on: ubuntu-latest

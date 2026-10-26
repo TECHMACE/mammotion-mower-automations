@@ -45,8 +45,8 @@ MAX_DEDUP_KEYS = 64
 RATE_LIMIT_COUNT = 20
 RATE_LIMIT_WINDOW_SECONDS = 3600.0
 
-TITLE = 'Mower coordinator'
-TEST_TITLE = 'Mower coordinator: TEST notification'
+TITLE = 'Mammotion mower coordinator'
+TEST_TITLE = 'Mammotion mower coordinator: TEST notification'
 TEST_PREFIX = 'TEST ONLY - not a mower event. '
 
 _ENTITY_ID = re.compile(r'^notify\.[a-z0-9_]+$')

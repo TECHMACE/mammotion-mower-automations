@@ -1,4 +1,4 @@
-# Mower Coordinator Custom Integration (`0.2.0-alpha.1`)
+# Mammotion Mower Coordinator Custom Integration (`0.2.0-alpha.1`)
 
 > **Alpha Status — Lab-Validated Only (No Production Testing):**
 > `custom_components/mower_coordinator` is an alpha Home Assistant integration (`0.2.0-alpha.1`). It has been exercised only against unit tests and the isolated, network-free simulator in `lab/`. **Testing used a running isolated Home Assistant Container with a fake mower; no production Home Assistant or physical mower was accessed.** Software readiness checks and simulator runs do not establish physical mowing or docking safety. Keep the legacy YAML package instructions in [`docs/SETUP.md`](SETUP.md) and [`README.md`](../README.md) as the reference for the existing YAML workflow.
@@ -6,7 +6,7 @@
 ## Start here
 
 1. Install the preview component and restart your test Home Assistant.
-2. Open **Settings → Devices & Services → Add Integration → Mower Coordinator**.
+2. Open **Settings → Devices & Services → Add Integration → Mammotion Mower Coordinator**.
 3. Select your mower, connect its sensors, add your areas, and choose operating rules and notifications.
 4. Leave **Automatic control off**. Open the coordinator device page and press **Check readiness**.
 5. Send a test notification, check your phone or HA notification panel, and confirm receipt.
@@ -45,7 +45,7 @@ Until this development branch is merged or released, use **manual installation f
 1. Open **HACS** in Home Assistant.
 2. Open the top-right menu (`⋮`) and select **Custom repositories**.
 3. Enter the repository URL `https://github.com/TECHMACE/mammotion-mower-automations` and select category **Integration** (`hacs.json` targets Home Assistant `2026.10.4` or newer).
-4. Locate **Mower Coordinator** in HACS, click **Download**, and confirm the download.
+4. Locate **Mammotion Mower Coordinator** in HACS, click **Download**, and confirm the download.
 5. **Restart Home Assistant** so the custom component is loaded.
 
 ### Option B: Manual Copy
@@ -55,7 +55,7 @@ Until this development branch is merged or released, use **manual installation f
 
 ### Adding the Integration Entry
 1. Go to **Settings → Devices & Services**.
-2. Click **Add Integration** and search for **Mower Coordinator**.
+2. Click **Add Integration** and search for **Mammotion Mower Coordinator**.
 
 ---
 
@@ -64,7 +64,7 @@ Until this development branch is merged or released, use **manual installation f
 The setup wizard (`config_flow.py`) inspects existing Home Assistant states only—it never calls mower movement services or sends messages during setup.
 
 ### Step 1: Welcome & Mower Selection (`user`)
-- **Name for this coordinator:** A friendly label (`1–80` characters, default `Mower coordinator`).
+- **Name for this coordinator:** A friendly label (`1–80` characters, default `Mammotion mower coordinator`).
 - **Mower (`mower_entity`):** Select your `lawn_mower.*` entity.
 - If the selected `lawn_mower.*` entity is linked to a Home Assistant device, the wizard inspects that device's entities and pre-fills unambiguous sensor suggestions for Step 2.
 
@@ -175,7 +175,7 @@ Once configured, the integration creates the following entities under your coord
 
 ### Buttons & Notification Testing
 1. **`Check readiness` (`button.*_check_readiness`):** Runs an immediate read-only evaluation of all preflight checks and updates the `Readiness` and `Explanation` sensors.
-2. **`Send test notification` (`button.*_send_test_notification`):** Sends a clearly labeled test message (`Title: "Mower coordinator: TEST notification"`, prefixed with `"TEST ONLY - not a mower event."`) to your configured destinations (or a persistent notification if no push targets are configured), bypassing quiet hours and event filters, and records `notification_test_requested: true`.
+2. **`Send test notification` (`button.*_send_test_notification`):** Sends a clearly labeled test message (`Title: "Mammotion mower coordinator: TEST notification"`, prefixed with `"TEST ONLY - not a mower event."`) to your configured destinations (or a persistent notification if no push targets are configured), bypassing quiet hours and event filters, and records `notification_test_requested: true`.
 3. **`Confirm test notification received` (`button.*_confirm_test_notification_received`):** Press this only after you physically see the test notification arrive on your phone or display. A successful Home Assistant service call only proves Home Assistant accepted the request—it does not prove downstream delivery to your device.
 4. **`Confirm setup and competing schedules off` (`button.*_confirm_setup_and_competing_schedules_off`):** Requires all `Readiness` preflight checks to pass (`all(preflight().values())`), and confirmed notification receipt when destinations are configured, then records `setup_confirmed: true`.
 5. **`Reset recovery after inspection` (`button.*_reset_recovery_after_inspection`):** Resets exhausted retry counters after you physically inspect the mower, disarm `Automatic control`, and confirm the mower is `docked`.
