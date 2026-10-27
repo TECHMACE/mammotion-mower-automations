@@ -1,6 +1,7 @@
 """Plain-language operational and commissioning state."""
 from homeassistant.components.sensor import SensorEntity
 from .entity import MowerEntity
+from .runtime import CONTROLLER_CHECK_SCOPE
 
 async def async_setup_entry(hass, entry, async_add_entities):
     r = entry.runtime_data
@@ -21,7 +22,7 @@ class MowerSensor(MowerEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         if self.key=="retries": return {"resume_attempts":self.runtime.state.retries,"return_attempts":self.runtime.state.return_retries,"limit_per_kind":self.runtime.config.get("max_retries",2)}
-        if self.key=="readiness": return {"checks":self.runtime.preflight()}
+        if self.key=="readiness": return {"checks":self.runtime.preflight(), "controller_check_scope":CONTROLLER_CHECK_SCOPE}
         if self.key=="commissioning": return {"steps":dict(self.runtime.evidence), "physical_validation":"not established by software"}
         if self.key=="explanation": return {"updated_at":self.runtime.updated_at, "mode":"control" if self.runtime.armed else "observe", "next_step":self.runtime.next_step}
         return None

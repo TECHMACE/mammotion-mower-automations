@@ -10,6 +10,10 @@ This is a development alpha. The [validation notes](INTEGRATION_VALIDATION.md) a
 
 Use Home Assistant 2026.10.4 or newer and a working Mammotion integration. Map and check your property in the Mammotion app first. Disable competing native schedules and older mower controllers before arming this one; do not run the YAML reference alongside it.
 
+The readiness check `known_yaml_controller_disabled` checks only `input_boolean.mower_package_enabled` and enabled `automation.mower_*` entities from the known YAML package. It does not inspect arbitrary or renamed HA automations/scripts, external automation engines, native schedules, or app/cloud/BLE clients. A passing check does not establish exclusive control. Verify those sources and any running/queued executions yourself before pressing **Confirm setup and competing schedules off**.
+
+**Automatic control off** is observation only and sends no mower commands, including protective returns. **Hold new work** while control remains on prevents new mowing/recovery but can still permit protective returns. Neither switch physically stops an already moving mower. A HA pause with user context sets Hold; vendor-app/BLE pauses may not carry that context, so do not assume their origin can be detected.
+
 **New to HACS or Home Assistant integrations? Start with [the click-by-click installation guide](START_HERE.md).** It covers installing HACS, connecting Mammotion-HA, downloading this coordinator, notifications and the first setup test.
 
 Add [this repository](https://github.com/TECHMACE/mammotion-mower-automations) as a HACS custom repository of type **Integration**. Choose `v0.2.0-alpha.2`, enabling beta versions if needed, then restart HA. The older `v0.1.0-alpha.1` is a YAML reference, not this integration. Manual component ZIP installation is covered in the start-here guide.
