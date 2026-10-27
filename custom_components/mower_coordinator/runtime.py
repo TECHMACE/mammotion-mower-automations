@@ -17,9 +17,10 @@ from .notifications import NotificationManager
 from .adapter_policy import CLEAR_HEALTH, CRITICAL_CODES, RECOVERABLE_CODES, distance_m, mileage_m, event_timestamp, weather_condition, forecast_safe, recharge_target
 
 DOMAIN="mower_coordinator"
+CONTROLLER_CHECK_SCOPE="Only on states for input_boolean.mower_package_enabled and automation.mower_* entity IDs are detected. Missing/unknown/unavailable states do not prove a controller is off. Other automations, scripts, external engines, other HA instances and native/app/cloud/BLE schedules are not detected; verify them separately before confirming setup."
 BAD={"unknown","unavailable","",None}
 DEVICE_TELEMETRY=("mower_entity","battery_entity","progress_entity","charging_entity","activity_entity","error_entity","blade_time_entity")
-COMPATIBILITY_CHECKS=("supported_adapter","saved_state_readable","start_action_available","dock_action_available","areas_match_mower","map_revision_available","active_error_source","settings_valid","no_legacy_controller_enabled")
+COMPATIBILITY_CHECKS=("supported_adapter","saved_state_readable","start_action_available","dock_action_available","areas_match_mower","map_revision_available","active_error_source","settings_valid","no_known_controller_reported_on")
 
 class MowerRuntime:
     def __init__(self,hass,entry):
@@ -239,7 +240,7 @@ class MowerRuntime:
         checks["active_error_source"]=not self.registry_key(self.config.get("error_entity","")).startswith("error_")
         try:self.settings(); checks["settings_valid"]=True
         except (ValueError,KeyError,TypeError):checks["settings_valid"]=False
-        checks["no_legacy_controller_enabled"]=not any(s.state=="on" and (s.entity_id=="input_boolean.mower_package_enabled" or s.entity_id.startswith("automation.mower_")) for s in self.hass.states.async_all())
+        checks["no_known_controller_reported_on"]=not any(s.state=="on" and (s.entity_id=="input_boolean.mower_package_enabled" or s.entity_id.startswith("automation.mower_")) for s in self.hass.states.async_all())
         checks["weather_ready"]=self.weather_safe() is not None
         checks["rain_available"]=bool(self.entity("rain_entity") and self.entity("rain_entity").state in {"on","off"})
         checks["presence_available"]=bool(self.entity("person_entity") and self.entity("person_entity").state not in BAD)
