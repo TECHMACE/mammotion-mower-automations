@@ -83,7 +83,7 @@ class EdgeAcceptance(unittest.IsolatedAsyncioTestCase):
                 self.assertFalse(any(s in {'start_mow','start_mowing'} for _,s,_ in self.hass.services.calls))
 
     async def test_known_yaml_check_does_not_claim_custom_controller_detection(self):
-        key='known_yaml_controller_disabled'
+        key='no_known_controller_reported_on'
         for eid in ('input_boolean.mower_package_enabled','automation.mower_schedule'):
             self.hass.states.put(eid,'on')
             self.assertFalse(self.r.preflight()[key])
@@ -127,3 +127,22 @@ class EdgeAcceptance(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(runtime.armed)
         self.assertTrue(runtime.hold)
         self.assertEqual(self.hass.services.calls,[])
+
+    async def test_controller_predicate_exact_states_and_prefixes(self):
+        key='no_known_controller_reported_on'
+        for eid,matched in (('input_boolean.mower_package_enabled',True),('automation.mower_x',True),('automation.mowerx',False),('automation.my_mower_x',False),('automation.renamed_garden',False)):
+            for state in (None,'off','unknown','unavailable','on'):
+                with self.subTest(entity=eid,state=state):
+                    if state is None:self.hass.states.items.pop(eid,None)
+                    else:self.hass.states.put(eid,state)
+                    self.assertEqual(self.r.preflight()[key],not(matched and state=='on'))
+            self.hass.states.items.pop(eid,None)
+
+    async def test_known_controller_enabled_after_setup_blocks_arm_and_evaluation(self):
+        self.r.armed=False
+        self.hass.states.put('automation.mower_x','on')
+        with self.assertRaises(fixture.Error):await self.r.async_set_control('armed',True)
+        self.r.armed=True
+        await self.r.async_evaluate()
+        self.assertEqual(self.hass.services.calls,[])
+        self.assertIn('no known controller reported on',self.r.reason)

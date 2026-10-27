@@ -1,3 +1,7 @@
+## Unreleased
+
+- Replace the overbroad readiness diagnostic key `no_legacy_controller_enabled` with `no_known_controller_reported_on`. Templates using the old attribute must migrate. The predicate only detects matching entity IDs reporting `on`; it does not prove exclusive control or disabled/missing entities. Expose its scope and clarify recovery defaults and hold/disarm behavior.
+
 # Changelog
 
 ## 0.2.0-alpha.2 — 2026-10-26
